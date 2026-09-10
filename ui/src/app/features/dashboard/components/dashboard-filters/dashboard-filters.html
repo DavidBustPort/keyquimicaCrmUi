@@ -1,0 +1,105 @@
+<section
+    class="panel filters p-[20px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
+    aria-label="Filtros del dashboard"
+>
+    <div
+        class="filter-intro flex justify-between items-center gap-[12px] mb-[16px] max-[450.01px]:[align-items:start] max-[450.01px]:flex-col"
+    >
+        <div>
+            <strong>Vista comercial</strong>
+            <p class="muted small my-[4px] mx-[0] text-[var(--muted)] text-[12px]">
+                Datos de demostración · últimos 12 meses
+            </p>
+        </div>
+        <span
+            class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
+            >{{ draft().mode === 'central' ? 'Oficina central' : 'Chihuahua Norte' }}</span
+        >
+    </div>
+    <form
+        class="grid grid-cols-3 gap-[16px] items-end max-[700.01px]:grid-cols-2 max-[450.01px]:grid-cols-1"
+        (ngSubmit)="apply()"
+    >
+        <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
+            >Vista de prueba<select
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                name="mode"
+                [ngModel]="draft().mode"
+                (ngModelChange)="mode($event)"
+            >
+                <option value="central">Oficina central</option>
+                <option value="gerente">Gerente</option>
+                <option value="representante">Representante · Ana Torres</option>
+            </select></label
+        >
+        @if (draft().mode === 'central') {
+            <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
+                >Grupo<select
+                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                    name="group"
+                    [ngModel]="draft().group"
+                    (ngModelChange)="group($event)"
+                >
+                    @for (group of groups; track group.value) {
+                        <option [value]="group.value">{{ group.label }}</option>
+                    }
+                </select></label
+            >
+            <app-multi-select
+                label="Sucursales"
+                [options]="branches()"
+                [selected]="draft().branches"
+                (selectionChange)="selectBranches($event)"
+            />
+        }
+        @if (draft().mode !== 'representante') {
+            <app-multi-select
+                label="Representantes"
+                [options]="reps()"
+                [selected]="draft().representatives"
+                (selectionChange)="selectReps($event)"
+            />
+        }
+        <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
+            >Desde<input
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                type="month"
+                name="start"
+                required
+                [ngModel]="draft().start"
+                (ngModelChange)="update('start', $event)"
+        /></label>
+        <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
+            >Hasta<input
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                type="month"
+                name="end"
+                required
+                [ngModel]="draft().end"
+                (ngModelChange)="update('end', $event)"
+        /></label>
+        <button
+            class="btn-primary border-[#007fc7] bg-[#007fc7] text-white min-h-[40px] hover:bg-[#006dae]"
+            type="submit"
+        >
+            Actualizar
+        </button>
+    </form>
+    @if (store.error()) {
+        <p
+            class="error text-[#b42318]"
+            role="alert"
+        >
+            {{ store.error() }}
+        </p>
+    }
+    <p
+        class="muted small text-[var(--muted)] text-[12px]"
+        aria-live="polite"
+    >
+        Periodo aplicado: {{ store.filter().start }} — {{ store.filter().end }}
+        @if (store.refreshed()) {
+            · Indicadores actualizados
+        }
+    </p>
+</section>

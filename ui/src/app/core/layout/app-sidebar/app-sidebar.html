@@ -1,0 +1,100 @@
+<aside
+    id="sidebar"
+    class="sidebar h-[100dvh] overflow-y-auto bg-[var(--primary)] text-white pb-[24px]"
+    aria-label="Menú principal"
+>
+    <div
+        class="brand-row py-[20px] px-[24px] h-[100px] flex items-center justify-center max-[991.01px]:justify-between"
+    >
+        <a
+            routerLink="/"
+            class="brand flex items-center justify-center"
+            aria-label="KEY · Inicio"
+            (click)="navigated.emit()"
+            ><img
+                class="max-w-[170px] max-h-[60px] object-contain max-[991.01px]:max-w-[140px]"
+                src="assets/logo.png"
+                alt="KEY" /></a
+        ><button
+            class="close-menu p-[8px] border-[0] hidden bg-transparent text-white text-[28px] cursor-pointer max-[991.01px]:block"
+            aria-label="Cerrar menú"
+            (click)="closed.emit()"
+        >
+            ×
+        </button>
+    </div>
+    <nav aria-label="Páginas">
+        <p class="section-label m-[0] px-[26px] pt-[20px] pb-[10px] text-[#ffffffac] text-[12px]">
+            Páginas
+        </p>
+        @for (item of items; track item.path) {
+            <a
+                class="nav-link py-[14px] px-[23px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[13px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[14px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
+                [routerLink]="item.path"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+                ariaCurrentWhenActive="page"
+                (click)="navigated.emit()"
+            >
+                <svg
+                    class="shrink-0 w-[19px] h-[19px] opacity-[0.8]"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <path [attr.d]="item.icon" />
+                </svg>
+                <span>{{ item.label }}</span>
+            </a>
+        }
+        <button
+            class="nav-link py-[14px] px-[23px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[13px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[14px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
+            [class.active]="isReport()"
+            [attr.aria-expanded]="isReportsOpen()"
+            aria-controls="report-links"
+            (click)="reportsOpen.set(!isReportsOpen())"
+        >
+            <svg
+                class="shrink-0 w-[19px] h-[19px] opacity-[0.8]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+            >
+                <path d="M3 3v18h18M7 14l4-4 4 3 6-7" /></svg
+            ><span>Reportes</span
+            ><span
+                class="chevron ml-[auto]"
+                aria-hidden="true"
+                >⌄</span
+            >
+        </button>
+        <div
+            id="report-links"
+            [hidden]="!isReportsOpen()"
+            class="subnav pt-[6px] pr-[0] pb-[10px] pl-[22px] [&[hidden]]:hidden"
+        >
+            @for (report of reports; track report.path) {
+                <a
+                    class="nav-link py-[11px] px-[18px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[12px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[12px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
+                    [routerLink]="report.path"
+                    routerLinkActive="active"
+                    ariaCurrentWhenActive="page"
+                    (click)="navigated.emit()"
+                    ><span
+                        class="report-dot w-[5px] h-[5px] rounded-full bg-[currentColor] shrink-0 opacity-[0.7]"
+                        aria-hidden="true"
+                    ></span
+                    >{{ report.label }}</a
+                >
+            }
+        </div>
+    </nav>
+</aside>

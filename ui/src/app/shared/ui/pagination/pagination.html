@@ -1,0 +1,38 @@
+<div
+    class="pagination py-[18px] px-[24px] flex justify-between items-center gap-[16px] flex-wrap text-[12px] text-[var(--muted)] max-[575.01px]:p-[16px]"
+>
+    <span>{{ start() }}–{{ end() }} de {{ total() }} resultados</span
+    ><label class="flex items-center gap-[8px]"
+        >Por página
+        <select
+            class="p-[6px] border-[1px] border-solid border-[var(--border)] rounded-[5px] bg-white"
+            #pageSize
+            [value]="size()"
+            (change)="sizeChange.emit(+pageSize.value)"
+        >
+            @for (count of [5, 10, 20, 50]; track count) {
+                <option [value]="count">{{ count }}</option>
+            }
+        </select></label
+    >
+    <div class="actions flex items-center gap-[10px] flex-wrap">
+        <button
+            class="btn btn-secondary py-[4px] px-[10px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[30px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+            type="button"
+            aria-label="Página anterior"
+            [disabled]="page() <= 1"
+            (click)="pageChange.emit(page() - 1)"
+        >
+            ‹</button
+        ><span aria-live="polite">{{ page() }} / {{ pages() }}</span
+        ><button
+            class="btn btn-secondary py-[4px] px-[10px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[30px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+            type="button"
+            aria-label="Página siguiente"
+            [disabled]="page() >= pages()"
+            (click)="pageChange.emit(page() + 1)"
+        >
+            ›
+        </button>
+    </div>
+</div>

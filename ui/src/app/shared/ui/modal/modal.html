@@ -1,0 +1,27 @@
+<dialog
+    class="m-[auto] p-[0] border-[1px] border-solid border-[var(--border)] rounded-[16px] w-[min(850px,_calc(100vw_-_32px))] max-h-[85dvh] text-[var(--text)] bg-white shadow-[0_24px_90px_#152b4e33] backdrop:bg-[#14253c80] backdrop:backdrop-blur-[3px]"
+    #dialog
+    [attr.aria-labelledby]="titleId"
+    (cancel)="$event.preventDefault(); closed.emit()"
+    (click)="backdrop($event)"
+>
+    <header
+        class="modal-header py-[20px] px-[24px] border-b-[1px] [border-bottom-style:solid] border-b-[var(--border)] flex items-center justify-between sticky top-[0] bg-white z-[1] max-[575.01px]:p-[16px]"
+    >
+        <h2
+            class="m-[0] text-[20px] font-semibold"
+            [id]="titleId"
+        >
+            {{ title() }}
+        </h2>
+        <button
+            type="button"
+            class="icon-button"
+            aria-label="Cerrar modal"
+            (click)="closed.emit()"
+        >
+            ×
+        </button>
+    </header>
+    <div class="modal-body p-[24px] max-[575.01px]:p-[16px]"><ng-content /></div>
+</dialog>

@@ -1,0 +1,53 @@
+<section
+    class="metrics my-[24px] mx-[0] grid grid-cols-6 gap-[12px] max-[1100.01px]:grid-cols-3 max-[650.01px]:grid-cols-2"
+    aria-label="Totales por etapa"
+>
+    @for (card of cards(); track card.label) {
+        <article
+            class="metric py-[18px] px-[12px] border-t-[4px] border-r-[1px] border-b-[1px] border-l-[1px] border-solid border-t-[var(--accent)] border-r-[#e6eaf0] border-b-[#e6eaf0] border-l-[#e6eaf0] bg-white rounded-[12px] grid gap-[10px]"
+            [style.--accent]="card.color"
+        >
+            <span class="text-[13px] font-semibold">{{ card.label }}</span
+            ><strong class="text-[clamp(16px,_1.6vw,_24px)] text-[var(--accent)]">{{
+                card.value | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+            }}</strong
+            ><small class="text-[10px] text-[#64748b]">MXN · periodo seleccionado</small>
+        </article>
+    }
+</section>
+<section
+    class="panel goal p-[22px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[24px] flex items-center gap-[30px] max-[650.01px]:items-stretch max-[650.01px]:flex-col max-[650.01px]:gap-[18px]"
+>
+    <div>
+        <h2 class="m-[0] text-[17px]">Meta de cierre</h2>
+        <p class="muted mx-[0] text-[var(--muted)] text-[13px] mt-[8px] mb-[0]">
+            {{ data().closed | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} de
+            {{ data().closeGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} MXN
+        </p>
+    </div>
+    <div class="progress-section flex-[1]">
+        <div class="progress-label flex justify-between gap-[12px] text-[12px] mb-[10px]">
+            <strong class="text-[20px] text-[#168664]">{{
+                data().closeGoal ? percent() + '%' : 'Sin presupuesto'
+            }}</strong
+            ><span>{{ percent() >= 100 ? '¡Meta lograda!' : 'Cumplimiento del periodo' }}</span>
+        </div>
+        <div
+            class="track h-[14px] rounded-[20px] bg-[#eef2f6] overflow-hidden"
+            role="progressbar"
+            aria-label="Meta de cierre"
+            [attr.aria-valuenow]="fill()"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            [attr.aria-valuetext]="percent() + '% de la meta'"
+        >
+            <div
+                class="h-full rounded-[20px]"
+                [style.width.%]="fill()"
+                [style.background]="
+                    percent() < 50 ? '#dc3545' : percent() < 80 ? '#d69b18' : '#168664'
+                "
+            ></div>
+        </div>
+    </div>
+</section>

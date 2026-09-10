@@ -1,0 +1,282 @@
+<header
+    class="page-heading mx-[0] flex justify-between items-center gap-[16px] mt-[4px] mb-[24px] max-[1100.01px]:flex-col max-[550.01px]:[align-items:start] max-[550.01px]:flex-col"
+>
+    <div>
+        <h1
+            class="mx-[0] text-[26px] font-[650] tracking-[-0.65px] leading-[1.3] mt-[5px] mb-[7px] max-[575.01px]:text-[23px]"
+        >
+            Inicio
+        </h1>
+        <p class="muted m-[0] text-[var(--muted)]">
+            Dashboard comercial · seguimiento de oportunidades y metas
+        </p>
+    </div>
+    <span
+        class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
+        >Datos mock</span
+    >
+</header>
+<app-dashboard-filters />
+<app-dashboard-metrics [data]="data()" />
+<div
+    class="dashboard-grid grid grid-cols-[minmax(0,_1.3fr)_minmax(0,_1fr)] gap-[24px] mb-[24px] max-[1050.01px]:grid-cols-1"
+>
+    <div class="left-column grid gap-[24px] min-w-0">
+        <section
+            class="panel block p-[22px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] min-w-0 max-[550.01px]:p-[16px]"
+        >
+            <h2 class="m-[0] text-[17px]">Cumplimiento de presupuestos</h2>
+            <p class="muted small text-[var(--muted)] text-[12px]">
+                Avance acumulado del periodo seleccionado
+            </p>
+            <div class="budgets grid grid-cols-2 gap-[16px] max-[550.01px]:gap-[8px]">
+                <article class="text-center">
+                    <h3 class="my-[12px] mx-[0] text-[14px]">Embudo</h3>
+                    <app-progress-gauge
+                        label="Presupuesto de embudo"
+                        [value]="data().pipeline"
+                        [goal]="data().pipelineGoal"
+                    /><strong class="text-[19px] max-[550.01px]:text-[16px]">{{
+                        data().pipeline | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                    }}</strong>
+                    <p class="muted small text-[var(--muted)] text-[12px]">
+                        Meta:
+                        {{ data().pipelineGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </p>
+                </article>
+                <article
+                    class="border-l-[1px] [border-left-style:solid] border-l-[#edf0f5] text-center"
+                >
+                    <h3 class="my-[12px] mx-[0] text-[14px]">Proyectos nuevos</h3>
+                    <app-progress-gauge
+                        label="Presupuesto de proyectos nuevos"
+                        color="#0072cc"
+                        [value]="data().newProjects"
+                        [goal]="data().newProjectsGoal"
+                    /><strong class="text-[19px] max-[550.01px]:text-[16px]">{{
+                        data().newProjects | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                    }}</strong>
+                    <p class="muted small text-[var(--muted)] text-[12px]">
+                        Meta:
+                        {{ data().newProjectsGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </p>
+                </article>
+            </div>
+        </section>
+        <section
+            class="panel block p-[22px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] min-w-0 max-[550.01px]:p-[16px]"
+        >
+            <h2 class="m-[0] text-[17px]">Oportunidades importantes</h2>
+            <p class="muted small text-[var(--muted)] text-[12px]">
+                Las cinco oportunidades con mayor VPO al cierre
+            </p>
+            <div class="table-scroll overflow-x-auto mt-[20px]">
+                <table class="w-full border-collapse text-[12px] text-left">
+                    <thead>
+                        <tr>
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                                scope="col"
+                            >
+                                Cliente
+                            </th>
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                                scope="col"
+                            >
+                                Etapa
+                            </th>
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                                scope="col"
+                            >
+                                VPO al cierre
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (opportunity of data().opportunities; track opportunity.id) {
+                            <tr class="hover:bg-[#fbfdff]">
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                >
+                                    <strong>{{ opportunity.client }}</strong
+                                    ><small
+                                        class="muted record-id text-[var(--muted)] block mt-[5px] text-[10px]"
+                                        >Cliente #{{ opportunity.clientId }} · Oportunidad #{{
+                                            opportunity.id
+                                        }}</small
+                                    >
+                                </td>
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                >
+                                    <span
+                                        class="stage-label py-[4px] px-[7px] inline-block [border-left:3px_solid] bg-[#f5f8fc] rounded-[4px]"
+                                        [style.border-color]="opportunity.color"
+                                        >{{ opportunity.stage }}</span
+                                    >
+                                </td>
+                                <td
+                                    class="amount py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] whitespace-nowrap font-semibold"
+                                >
+                                    {{
+                                        opportunity.amount
+                                            | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                                    }}
+                                </td>
+                            </tr>
+                        } @empty {
+                            <tr class="hover:bg-[#fbfdff]">
+                                <td
+                                    colspan="3"
+                                    class="no-data p-[30px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-center text-[#64748b]"
+                                >
+                                    No hay oportunidades para los filtros seleccionados.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    <section
+        class="panel block funnel-panel p-[22px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] min-w-0 max-[550.01px]:p-[16px]"
+    >
+        <h2 class="m-[0] text-[17px]">Embudo de oportunidades</h2>
+        <p class="muted small text-[var(--muted)] text-[12px]">
+            {{ data().count }} oportunidades ·
+            {{ data().total | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} MXN
+        </p>
+        <div
+            class="funnel my-[28px] mx-[0] flex items-center flex-col gap-[6px] max-[1050.01px]:my-[24px] max-[1050.01px]:mx-[auto] max-[1050.01px]:max-w-[430px]"
+        >
+            @for (stage of data().stages; track stage.name; let i = $index) {
+                <div
+                    class="funnel-stage py-[20px] px-[0] [clip-path:polygon(0_0,_100%_0,_93%_100%,_7%_100%)] grid gap-[7px] [justify-items:center] text-white [text-shadow:0_1px_2px_#00396c] text-[14px] min-h-[100px]"
+                    [style.width.%]="100 - i * 12"
+                    [style.background]="stage.color"
+                >
+                    <strong>{{ stage.name }}</strong
+                    ><span class="text-[22px] font-bold">{{
+                        stage.amount | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                    }}</span
+                    ><small class="text-[11px]"
+                        >{{ stage.count }} oportunidades · {{ stage.share }}%</small
+                    >
+                </div>
+            }
+        </div>
+        <p class="muted small text-[var(--muted)] text-[12px]">
+            El ancho indica la secuencia de etapas. Los porcentajes muestran su participación en el
+            VPO total.
+        </p>
+    </section>
+</div>
+<app-dashboard-statistics [data]="data()" />
+<div
+    class="dashboard-grid bottom-grid my-[24px] grid grid-cols-[minmax(0,_1.3fr)_minmax(0,_1fr)] gap-[24px] max-[1050.01px]:grid-cols-1"
+>
+    <section
+        class="panel block p-[22px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] min-w-0 max-[550.01px]:p-[16px]"
+    >
+        <h2 class="m-[0] text-[17px]">Origen de las oportunidades</h2>
+        <p class="muted small text-[var(--muted)] text-[12px]">
+            Distribución entre leads y prospectos
+        </p>
+        <div
+            class="sources py-[26px] px-[0] flex items-center gap-[30px] justify-center max-[550.01px]:flex-col max-[550.01px]:gap-[24px]"
+        >
+            <div
+                class="donut h-[190px] w-[190px] rounded-full grid place-items-center shrink-0"
+                [style.background]="sourceGradient()"
+                role="img"
+                [attr.aria-label]="
+                    'Origen: ' +
+                    data().sources[0].count +
+                    ' prospectos y ' +
+                    data().sources[1].count +
+                    ' leads'
+                "
+            >
+                <div
+                    class="h-[132px] w-[132px] rounded-full bg-white flex items-center justify-center flex-col gap-[5px]"
+                >
+                    <strong class="text-[30px]">{{ sourceTotal() }}</strong
+                    ><span class="text-[11px] text-[#64748b]">oportunidades</span>
+                </div>
+            </div>
+            <div class="legend grid gap-[20px] text-[13px]">
+                @for (source of data().sources; track source.name) {
+                    <div class="flex gap-[10px] items-center">
+                        <span
+                            class="dot w-[10px] h-[10px] rounded-full inline-block"
+                            [style.background]="source.color"
+                        ></span
+                        ><span>{{ source.name }}</span
+                        ><strong>{{ source.count }}</strong
+                        ><span class="muted text-[var(--muted)]"
+                            >{{ sourceShare(source.count) }}%</span
+                        >
+                    </div>
+                }
+            </div>
+        </div>
+        @if (!sourceTotal()) {
+            <p class="muted small text-[var(--muted)] text-[12px]">
+                Sin datos para esta selección.
+            </p>
+        }
+    </section>
+    <section
+        class="panel block p-[22px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] min-w-0 max-[550.01px]:p-[16px]"
+    >
+        <h2 class="m-[0] text-[17px]">Tiempo por etapa</h2>
+        <p class="muted small text-[var(--muted)] text-[12px]">Promedio de días entre etapas</p>
+        <div class="times">
+            @for (time of data().times; track time.from) {
+                <div
+                    class="py-[20px] px-[0] border-b-[1px] [border-bottom-style:solid] border-b-[#edf0f5] flex justify-between items-center gap-[14px] text-[13px]"
+                >
+                    <div>
+                        <strong>{{ time.from }} → {{ time.to }}</strong
+                        ><small
+                            class="block text-[#168664] mt-[6px] [&.slow]:text-[#b42318]"
+                            [class.slow]="(time.days ?? 0) > 10"
+                            >{{
+                                time.days === null
+                                    ? 'Sin datos'
+                                    : time.days <= 5
+                                      ? 'Rápido'
+                                      : time.days <= 10
+                                        ? 'En seguimiento'
+                                        : 'Lento'
+                            }}</small
+                        >
+                    </div>
+                    <span class="whitespace-nowrap font-semibold">{{
+                        time.days === null ? '—' : (time.days | number: '1.0-1') + ' días'
+                    }}</span>
+                </div>
+            }
+        </div>
+        <div
+            class="lifecycle p-[16px] flex justify-between gap-[12px] bg-[#eff6ff] rounded-[10px] mt-[20px] text-[13px] text-[#165da9]"
+        >
+            <span>Ciclo promedio total</span
+            ><strong>{{
+                data().totalDays === null ? '—' : (data().totalDays | number: '1.0-1') + ' días'
+            }}</strong>
+        </div>
+    </section>
+</div>
+<div class="page-end text-right mb-[24px]">
+    <button
+        type="button"
+        class="btn-secondary border-[#dce4ed] bg-white text-[#46576a] hover:bg-[#f3f7fb]"
+        (click)="scrollTop()"
+    >
+        ↑ Volver arriba
+    </button>
+</div>

@@ -1,0 +1,44 @@
+<div
+    class="gauge mx-[auto] max-w-[210px] mt-[16px] mb-[0]"
+    role="img"
+    [attr.aria-label]="label() + ': ' + (goal() > 0 ? percent() + '%' : 'sin presupuesto')"
+>
+    <svg
+        class="w-full block"
+        viewBox="0 0 200 125"
+        aria-hidden="true"
+    >
+        <path
+            d="M20 105 A80 80 0 0 1 180 105"
+            fill="none"
+            stroke="#e9eff5"
+            stroke-width="14"
+            stroke-linecap="round"
+        />
+        <path
+            d="M20 105 A80 80 0 0 1 180 105"
+            fill="none"
+            [attr.stroke]="color()"
+            stroke-width="14"
+            stroke-linecap="round"
+            pathLength="100"
+            [attr.stroke-dasharray]="fill() + ' 100'"
+        />
+        <text
+            class="font-bold text-[28px] [font-family:'Segoe_UI',_sans-serif] fill-[var(--text)]"
+            x="100"
+            y="90"
+            text-anchor="middle"
+        >
+            {{ goal() > 0 ? percent() + '%' : '—' }}
+        </text>
+        <text
+            class="caption font-normal text-[11px] [font-family:'Segoe_UI',_sans-serif] fill-[var(--muted)]"
+            x="100"
+            y="116"
+            text-anchor="middle"
+        >
+            {{ goal() > 0 ? 'Cumplimiento' : 'Sin presupuesto' }}
+        </text>
+    </svg>
+</div>

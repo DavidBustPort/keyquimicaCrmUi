@@ -1,0 +1,188 @@
+<section
+    class="panel statistics p-[22px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
+>
+    <h2 class="m-[0] text-[17px]">Estadísticas por etapa</h2>
+    <p class="muted small text-[var(--muted)] text-[12px]">
+        Promedio mensual del periodo seleccionado frente a los tres meses anteriores a su inicio.
+    </p>
+    <div class="table-scroll overflow-x-auto mt-[20px]">
+        <table class="w-full border-collapse text-[12px] text-left min-w-[850px]">
+            <thead>
+                <tr>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        rowspan="2"
+                        scope="col"
+                    >
+                        Etapa
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        colspan="3"
+                        scope="colgroup"
+                    >
+                        Periodo seleccionado · promedio mensual
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        colspan="3"
+                        scope="colgroup"
+                    >
+                        Tres meses anteriores · promedio mensual
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        rowspan="2"
+                        scope="col"
+                    >
+                        Variación de participación
+                    </th>
+                </tr>
+                <tr>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        scope="col"
+                    >
+                        Oportunidades
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        scope="col"
+                    >
+                        VPO al cierre
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        scope="col"
+                    >
+                        %
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        scope="col"
+                    >
+                        Oportunidades
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        scope="col"
+                    >
+                        VPO al cierre
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f7f9fc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        scope="col"
+                    >
+                        %
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (stage of data().stages; track stage.name) {
+                    <tr class="hover:bg-[#fbfdff]">
+                        <th
+                            class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                            scope="row"
+                        >
+                            <span
+                                class="dot inline-block w-[8px] h-[8px] rounded-full mr-[8px]"
+                                [style.background]="stage.color"
+                            ></span
+                            >{{ stage.name }}
+                        </th>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            {{ stage.count / data().monthCount | number: '1.0-1' }}
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            {{
+                                stage.amount / data().monthCount
+                                    | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                            }}
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            {{ stage.share }}%
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            {{ stage.previousCount | number: '1.0-1' }}
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            {{ stage.previousAmount | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            {{ stage.previousShare }}%
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            {{ stage.share - stage.previousShare > 0 ? '+' : ''
+                            }}{{ stage.share - stage.previousShare }} pp
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="font-bold bg-[#f0f6ff]">
+                <tr>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right first:text-left"
+                        scope="row"
+                    >
+                        Total
+                    </th>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ data().count / data().monthCount | number: '1.0-1' }}
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{
+                            data().total / data().monthCount
+                                | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                        }}
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ data().total ? '100%' : '0%' }}
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        colspan="2"
+                    >
+                        {{ previousTotal() | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ previousTotal() ? '100%' : '0%' }}
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{
+                            growth() === null
+                                ? 'Sin base'
+                                : (growth() | number: '1.0-1') + '% en VPO'
+                        }}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <p class="muted small text-[var(--muted)] text-[12px]">
+        Importes en MXN · VPO: valor potencial de oportunidad · pp: puntos porcentuales.
+    </p>
+</section>

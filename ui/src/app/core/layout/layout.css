@@ -1,0 +1,30 @@
+/* Selectores de estado y estructura; presentación en Tailwind dentro del HTML. */
+.collapsed app-sidebar {
+    transform: translateX(-100%);
+    visibility: hidden;
+}
+.collapsed .main {
+    margin-left: 0;
+}
+.content.expanded {
+    max-width: none;
+}
+.content.narrow {
+    max-width: 960px;
+}
+.content.medium {
+    max-width: 1120px;
+}
+@media (max-width: 991px) {
+    .collapsed app-sidebar {
+        transform: translateX(-100%);
+        visibility: hidden;
+    }
+    .mobile-open app-sidebar {
+        transform: translateX(0);
+        visibility: visible;
+    }
+    .collapsed .main {
+        margin-left: 0;
+    }
+}

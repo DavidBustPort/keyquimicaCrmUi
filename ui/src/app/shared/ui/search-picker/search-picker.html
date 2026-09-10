@@ -1,0 +1,29 @@
+<label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
+    >{{ label()
+    }}<input
+        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+        #search
+        type="search"
+        placeholder="Escribe un nombre o ID…"
+        [value]="query()"
+        (input)="query.set(search.value)"
+/></label>
+<div class="search-choices grid gap-[8px] mt-[18px]">
+    @for (option of matches(); track option.id) {
+        <button
+            type="button"
+            class="search-choice p-[16px] border-[1px] border-solid border-[var(--border)] w-full flex items-center justify-between gap-[16px] text-left rounded-[8px] bg-white cursor-pointer text-[var(--text)] hover:border-[#8cc5e8] hover:bg-[#f1f8ff]"
+            (click)="chosen.emit(option.id)"
+        >
+            <span
+                ><strong class="font-semibold">{{ option.label }}</strong
+                ><small
+                    class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                    >{{ option.description }}</small
+                ></span
+            ><span aria-hidden="true">→</span>
+        </button>
+    } @empty {
+        <app-empty-state title="No se encontraron coincidencias" />
+    }
+</div>

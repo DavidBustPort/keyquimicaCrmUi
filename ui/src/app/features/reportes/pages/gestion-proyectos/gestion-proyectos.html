@@ -1,0 +1,303 @@
+<header
+    class="page-heading mx-[0] flex justify-between items-center gap-[16px] mt-[4px] mb-[20px] max-[1100.01px]:flex-col max-[550.01px]:[align-items:start] max-[550.01px]:flex-col"
+>
+    <div>
+        <h1
+            class="mx-[0] text-[26px] font-[650] tracking-[-0.65px] leading-[1.3] mt-[5px] mb-[7px] max-[575.01px]:text-[23px]"
+        >
+            Gestión de Oportunidades
+        </h1>
+        <p class="muted mx-[0] text-[var(--muted)] mt-[8px] mb-[0]">
+            Configura y descarga tu reporte comercial.
+        </p>
+    </div>
+    <span
+        class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
+        >Datos mock</span
+    >
+</header>
+<section
+    class="panel filters p-[24px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[24px] max-[550.01px]:p-[16px]"
+>
+    <div
+        class="section-heading flex items-center justify-between gap-[16px] mb-[20px] max-[550.01px]:[align-items:start] max-[550.01px]:flex-col"
+    >
+        <h2 class="m-[0] text-[16px] font-[650]">Filtros de búsqueda</h2>
+        <button
+            type="button"
+            class="btn-secondary border-[#dce4ed] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.5] disabled:cursor-default"
+            [disabled]="!dirty()"
+            (click)="reset()"
+        >
+            Limpiar filtros
+        </button>
+    </div>
+    <div
+        class="filter-grid grid grid-cols-3 gap-[20px] max-[1000.01px]:grid-cols-2 max-[550.01px]:grid-cols-1"
+    >
+        <label class="field grid flex-col gap-[8px] text-[13px] font-medium"
+            >Vista de prueba<select
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[42px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15] disabled:bg-[#f1f5f9] disabled:text-[#64748b]"
+                [ngModel]="filters().view"
+                (ngModelChange)="set('view', $event)"
+            >
+                <option value="central">Oficina central</option>
+                <option value="gerente">Gerente · Chihuahua Norte</option>
+                <option value="representante">Representante · Ana Torres</option>
+            </select></label
+        >
+        @if (filters().view === 'central') {
+            <label class="field grid flex-col gap-[8px] text-[13px] font-medium"
+                >Grupo de sucursales<select
+                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[42px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15] disabled:bg-[#f1f5f9] disabled:text-[#64748b]"
+                    [ngModel]="filters().group"
+                    (ngModelChange)="set('group', $event)"
+                >
+                    @for (group of groups; track group.value) {
+                        <option [value]="group.value">{{ group.label }}</option>
+                    }
+                </select></label
+            ><app-multi-select
+                label="Sucursales"
+                [options]="branches()"
+                [selected]="filters().branches"
+                (selectionChange)="set('branches', $event)"
+            />
+        }
+        @if (filters().view !== 'representante') {
+            <label class="field grid flex-col gap-[8px] text-[13px] font-medium"
+                >Representante<select
+                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[42px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15] disabled:bg-[#f1f5f9] disabled:text-[#64748b]"
+                    [ngModel]="filters().representative"
+                    (ngModelChange)="set('representative', $event)"
+                >
+                    <option value="">Todos</option>
+                    @for (rep of representatives(); track rep.value) {
+                        <option [value]="rep.value">{{ rep.label }}</option>
+                    }
+                </select></label
+            >
+        }
+        <label class="field grid flex-col gap-[8px] text-[13px] font-medium"
+            >Desde<input
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15] w-full min-h-[42px]"
+                type="month"
+                required
+                [ngModel]="filters().start"
+                (ngModelChange)="set('start', $event)" /></label
+        ><label class="field grid flex-col gap-[8px] text-[13px] font-medium"
+            >Hasta<input
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15] w-full min-h-[42px]"
+                type="month"
+                required
+                [ngModel]="filters().end"
+                (ngModelChange)="set('end', $event)"
+        /></label>
+        @for (field of fields; track field.key) {
+            @if (field.key !== 'supplier' || filters().view === 'central') {
+                <label class="field grid flex-col gap-[8px] text-[13px] font-medium"
+                    >{{ field.title
+                    }}<select
+                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[42px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15] disabled:bg-[#f1f5f9] disabled:text-[#64748b]"
+                        [disabled]="field.key === 'segment' && !filters().uen"
+                        [ngModel]="filters()[field.key]"
+                        (ngModelChange)="set(field.key, $event)"
+                    >
+                        <option value="">
+                            {{
+                                field.key === 'segment' && !filters().uen
+                                    ? 'Selecciona una UEN'
+                                    : 'Todos'
+                            }}
+                        </option>
+                        @for (option of options(field.key); track option.value) {
+                            <option [value]="option.value">{{ option.label }}</option>
+                        }
+                    </select></label
+                >
+            }
+        }
+    </div>
+</section>
+<section
+    class="panel export-panel p-[22px] border-[1px] border-solid border-[var(--border)] bg-[#f8fafc] rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[24px] flex justify-between gap-[20px] items-center max-[1000.01px]:items-stretch max-[1000.01px]:flex-col"
+>
+    <div>
+        @if (filters().view === 'central') {
+            <fieldset class="m-[0] p-[0] border-[0]">
+                <legend class="font-semibold text-[13px] mb-[12px]">Contenido del reporte</legend>
+                <div class="export-options flex flex-wrap gap-[10px] max-[550.01px]:flex-col">
+                    <label
+                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dbe3ef] flex items-center gap-[8px] bg-white rounded-[8px] text-[13px] cursor-pointer has-[:checked]:bg-[#eaf3ff] has-[:checked]:border-[#2782dc] has-[:checked]:text-[#155caa]"
+                        ><input
+                            class="accent-[#1673d1]"
+                            type="radio"
+                            name="exportMode"
+                            value="all"
+                            [ngModel]="filters().mode"
+                            (ngModelChange)="set('mode', $event)"
+                        />Completo</label
+                    ><label
+                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dbe3ef] flex items-center gap-[8px] bg-white rounded-[8px] text-[13px] cursor-pointer has-[:checked]:bg-[#eaf3ff] has-[:checked]:border-[#2782dc] has-[:checked]:text-[#155caa]"
+                        ><input
+                            class="accent-[#1673d1]"
+                            type="radio"
+                            name="exportMode"
+                            value="kpi"
+                            [ngModel]="filters().mode"
+                            (ngModelChange)="set('mode', $event)"
+                        />Resumen KPIs</label
+                    ><label
+                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dbe3ef] flex items-center gap-[8px] bg-white rounded-[8px] text-[13px] cursor-pointer has-[:checked]:bg-[#eaf3ff] has-[:checked]:border-[#2782dc] has-[:checked]:text-[#155caa]"
+                        ><input
+                            class="accent-[#1673d1]"
+                            type="radio"
+                            name="exportMode"
+                            value="database"
+                            [ngModel]="filters().mode"
+                            (ngModelChange)="set('mode', $event)"
+                        />Base de datos</label
+                    >
+                </div>
+            </fieldset>
+        } @else {
+            <strong>Reporte completo de sucursal</strong>
+        }
+        <p class="muted small text-[var(--muted)] text-[12px]">
+            Excel XML (.xml), compatible con Excel · datos de demostración de los últimos 12 meses.
+        </p>
+    </div>
+    <button
+        type="button"
+        class="btn-primary border-[#007fc7] bg-[#007fc7] text-white whitespace-nowrap min-h-[44px] hover:bg-[#006dae] disabled:opacity-[0.5] disabled:cursor-default"
+        [disabled]="busy()"
+        (click)="export()"
+    >
+        {{ busy() ? 'Generando…' : 'Descargar Excel' }}
+    </button>
+</section>
+@if (error()) {
+    <p
+        class="message error p-[16px] rounded-[10px] text-[14px] bg-[#fff0ee] text-[#b42318]"
+        role="alert"
+    >
+        {{ error() }}
+    </p>
+}
+@if (status()) {
+    <p
+        class="message success p-[16px] rounded-[10px] text-[14px] bg-[#eaf8f1] text-[#166447]"
+        role="status"
+    >
+        {{ status() }}
+    </p>
+}
+<section
+    class="panel preview p-[24px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[24px] max-[550.01px]:p-[16px]"
+>
+    <div
+        class="section-heading flex items-center justify-between gap-[16px] mb-[20px] max-[550.01px]:[align-items:start] max-[550.01px]:flex-col"
+    >
+        <div>
+            <h2 class="m-[0] text-[16px] font-[650]">Vista previa</h2>
+            <p class="muted small text-[var(--muted)] text-[12px]">
+                {{ rows().length }} oportunidades · VPO total
+                {{ total() | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} MXN
+            </p>
+        </div>
+        <span class="muted small text-[var(--muted)] text-[12px]">Primeros 10 registros</span>
+    </div>
+    <div class="table-scroll overflow-x-auto">
+        <table class="w-full border-collapse text-[12px] text-left min-w-[750px]">
+            <thead>
+                <tr>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        scope="col"
+                    >
+                        Oportunidad / Cliente
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        scope="col"
+                    >
+                        Periodo
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        scope="col"
+                    >
+                        Sucursal
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        scope="col"
+                    >
+                        Etapa
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        scope="col"
+                    >
+                        Tipo de venta
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        scope="col"
+                    >
+                        VPO al cierre
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (row of rows().slice(0, 10); track row.id) {
+                    <tr class="hover:bg-[#fbfdff]">
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            <strong>{{ row.client }}</strong
+                            ><small class="block text-[#64748b] mt-[6px]"
+                                >#{{ row.id }} ·
+                                {{ label('representative', row.representative) }}</small
+                            >
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            {{ row.month }}
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            {{ label('branch', row.branch) }}
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            {{ label('stage', row.stage) }}
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            {{ label('saleType', row.saleType) }}
+                        </td>
+                        <td
+                            class="amount py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] whitespace-nowrap font-semibold"
+                        >
+                            {{ row.amount | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr class="hover:bg-[#fbfdff]">
+                        <td
+                            colspan="6"
+                            class="empty p-[30px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-center text-[#64748b]"
+                        >
+                            No hay registros para esta selección. Revisa el periodo y los filtros.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

@@ -1,0 +1,42 @@
+<div class="multi-field text-[12px] font-[550] grid gap-[7px]">
+    <span>{{ label() }}</span>
+    <details
+        class="relative"
+        (keydown.escape)="menu.open = false"
+        #menu
+    >
+        <summary
+            class="py-[11px] px-[12px] border-[1px] border-solid border-[#dce3eb] rounded-[7px] bg-white cursor-pointer font-normal text-[13px] focus-visible:[outline:3px_solid_#89bfff] focus-visible:[outline-offset:2px]"
+            [attr.aria-label]="label() + ': ' + summary()"
+        >
+            {{ summary() }}
+        </summary>
+        <div
+            class="choices p-[8px] border-[1px] border-solid border-[var(--border)] absolute top-[calc(100%_+_5px)] left-[0] min-w-[100%] w-[max-content] max-w-[280px] max-h-[240px] overflow-auto bg-white rounded-[8px] shadow-[0_10px_30px_#243d5820] z-[22]"
+        >
+            <label
+                class="p-[10px] flex items-center gap-[10px] font-normal cursor-pointer hover:bg-[#f2f8ff]"
+                ><input
+                    class="accent-[#007fc7]"
+                    type="checkbox"
+                    [checked]="all()"
+                    [disabled]="!options().length"
+                    (change)="toggleAll()"
+                />Seleccionar todos</label
+            >
+            @for (option of options(); track option.value) {
+                <label
+                    class="p-[10px] flex items-center gap-[10px] font-normal cursor-pointer hover:bg-[#f2f8ff]"
+                    ><input
+                        class="accent-[#007fc7]"
+                        type="checkbox"
+                        [checked]="selected().includes(option.value)"
+                        (change)="toggle(option.value)"
+                    />{{ option.label }}</label
+                >
+            } @empty {
+                <p class="p-[12px] text-[var(--muted)]">Sin opciones disponibles</p>
+            }
+        </div>
+    </details>
+</div>

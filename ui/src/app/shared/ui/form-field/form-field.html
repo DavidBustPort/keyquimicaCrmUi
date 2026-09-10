@@ -1,0 +1,21 @@
+<div class="field flex flex-col gap-[7px] text-[12px] font-[550]">
+    <label
+        class="leading-[1.4]"
+        [for]="forId()"
+        >{{ label() }}
+        @if (required()) {
+            <span
+                class="required text-[#b72f40]"
+                aria-hidden="true"
+                >*</span
+            >
+        }</label
+    ><ng-content />
+    @if (error()) {
+        <small
+            class="field-error text-[#b72f40] text-[12px] font-normal"
+            [id]="forId() + '-error'"
+            >{{ error() }}</small
+        >
+    }
+</div>

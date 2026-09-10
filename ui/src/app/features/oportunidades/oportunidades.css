@@ -1,0 +1,101 @@
+/* Selectores compartidos para contenido proyectado y controles reutilizables. */
+@layer components {
+    .pipeline-card > span {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .pipeline-card strong {
+        display: block;
+        margin-top: 12px;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    .client-summary h2 {
+        font-size: 22px;
+        margin: 6px 0;
+        font-weight: 600;
+    }
+    .opportunity-tabs button {
+        padding: 14px 18px;
+        border: 0;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+    }
+    .opportunity-tabs button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    .application-row .checkbox-label {
+        flex-wrap: wrap;
+    }
+    .catalog-row > div {
+        flex: 1;
+    }
+    .import-box h3,
+    .price-request h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    app-productos-editor td input {
+        min-width: 100px;
+    }
+    @media (max-width: 575px) {
+        .pipeline-card strong {
+            font-size: 18px;
+        }
+        .client-summary h2 {
+            font-size: 19px;
+        }
+        .opportunity-tabs button {
+            padding: 12px;
+        }
+        .catalog-row > div {
+            flex-basis: 100%;
+        }
+    }
+}
+/* Estados dinámicos que prevalecen sobre la presentación inicial. */
+@layer states {
+    .pipeline-card:nth-child(2) {
+        border-top-color: #f0b85e;
+    }
+    .pipeline-card:nth-child(3) {
+        border-top-color: #b99cde;
+    }
+    .pipeline-card:nth-child(4) {
+        border-top-color: #65b58f;
+    }
+    .pipeline-card:nth-child(5) {
+        border-top-color: #d7979d;
+    }
+    .selected-stage {
+        background: #edf7ff;
+        border-color: #68baf0;
+    }
+    .stage-closed {
+        background: #eaf8f1;
+        color: #267454;
+        border-color: #ceecdf;
+    }
+    .stage-cancelled {
+        background: #fff1f1;
+        color: #a63a49;
+        border-color: #f2d6d9;
+    }
+    .opportunity-tabs button.active {
+        color: #007abf;
+        border-bottom-color: #00a3ff;
+    }
+    section[hidden] {
+        display: none !important;
+    }
+}

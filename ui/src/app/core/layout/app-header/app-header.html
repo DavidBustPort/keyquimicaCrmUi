@@ -1,0 +1,49 @@
+<header
+    class="header py-[0] px-[28px] border-b-[1px] [border-bottom-style:solid] border-b-[var(--border)] h-[76px] bg-white flex items-center gap-[18px] shadow-[0_3px_18px_#20355005] max-[575.01px]:py-[0] max-[575.01px]:px-[16px] max-[575.01px]:h-[66px] max-[575.01px]:gap-[10px]"
+>
+    <button
+        class="icon-button desktop-toggle max-[991.01px]:hidden"
+        aria-label="Alternar menú lateral"
+        aria-controls="sidebar"
+        [attr.aria-expanded]="desktopOpen()"
+        (click)="menuToggle.emit()"
+    >
+        <span aria-hidden="true">☰</span>
+    </button>
+    <button
+        class="icon-button mobile-toggle hidden max-[991.01px]:inline-grid"
+        aria-label="Alternar menú lateral"
+        aria-controls="sidebar"
+        [attr.aria-expanded]="mobileOpen()"
+        (click)="menuToggle.emit()"
+    >
+        <span aria-hidden="true">☰</span>
+    </button>
+    <span class="product text-[17px] font-semibold tracking-[-0.4px]"
+        >CRM <span class="text-[12px] text-[var(--muted)] ml-[4px]">V3</span></span
+    >
+    <div
+        class="account ml-[auto] flex gap-[10px] items-center text-[13px] max-[575.01px]:[&>span:last-child]:hidden"
+    >
+        <span
+            class="avatar grid place-items-center w-[36px] h-[36px] rounded-full text-[var(--primary)] bg-[#eaf2fc] text-[12px] font-semibold"
+            aria-hidden="true"
+            >{{ user.initials }}</span
+        ><span
+            >{{ user.name
+            }}<small class="block text-[11px] text-[var(--muted)] mt-[2px]">{{
+                user.role
+            }}</small></span
+        >
+    </div>
+    @if (canExpand()) {
+        <button
+            class="icon-button"
+            [attr.aria-label]="expanded() ? 'Reducir ancho del contenido' : 'Expandir contenido'"
+            [attr.aria-pressed]="expanded()"
+            (click)="expandToggle.emit()"
+        >
+            <span aria-hidden="true">⛶</span>
+        </button>
+    }
+</header>

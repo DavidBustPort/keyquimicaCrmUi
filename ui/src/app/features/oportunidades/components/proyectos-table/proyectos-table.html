@@ -1,0 +1,491 @@
+<div
+    class="table-scroll overflow-x-auto"
+    tabindex="0"
+    aria-label="Tabla de oportunidades"
+>
+    <table class="w-full border-collapse text-[12px] text-left">
+        <thead>
+            <tr>
+                <th
+                    class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                >
+                    Proyecto
+                </th>
+                <th
+                    class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                >
+                    Cliente / Prospecto
+                </th>
+                <th
+                    class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                >
+                    Aplicación
+                </th>
+                <th
+                    class="number py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right"
+                >
+                    VPO
+                </th>
+                <th
+                    class="number py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right"
+                >
+                    VPT
+                </th>
+                <th
+                    class="number py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right"
+                >
+                    Monto
+                </th>
+                <th
+                    class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                >
+                    Etapa
+                </th>
+                <th
+                    class="number py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right"
+                >
+                    ACyS
+                </th>
+                <th
+                    class="number py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right"
+                >
+                    Facturación
+                </th>
+                <th
+                    class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                >
+                    Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (row of rows(); track row.id) {
+                <tr class="hover:bg-[#fbfdff]">
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                    >
+                        <strong>#{{ row.id }}</strong
+                        ><small
+                            class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                            >{{ row.tipoVenta }}</small
+                        >
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                    >
+                        <button
+                            type="button"
+                            class="company-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[inherit] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer text-left hover:underline"
+                            (click)="open(row)"
+                        >
+                            {{ client(row.prospectoId)?.razonSocial }}</button
+                        ><small
+                            class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                            >{{ client(row.prospectoId)?.fuente }} · {{ row.fecha }}</small
+                        >
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                    >
+                        {{ application(row.aplicacionId)
+                        }}<small
+                            class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                            >{{ row.productos.length }} productos ·
+                            {{ row.productos.length ? 'Con productos' : 'Sin productos' }}</small
+                        >
+                    </td>
+                    <td
+                        class="number py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ row.vpo | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </td>
+                    <td
+                        class="number py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ row.vpt | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </td>
+                    <td
+                        class="number py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ amount(row) | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                    >
+                        <span
+                            class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
+                            [class.stage-closed]="row.etapa === 'Cierre'"
+                            [class.stage-cancelled]="row.etapa === 'Cancelada'"
+                            >{{ row.etapa }}</span
+                        >
+                        @if (pending(row)) {
+                            <small
+                                class="table-subline field-error text-[#b72f40] text-[11px] font-normal block whitespace-nowrap mt-[5px]"
+                                >Precio por autorizar</small
+                            >
+                        }
+                    </td>
+                    <td
+                        class="number py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ row.acys | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </td>
+                    <td
+                        class="number py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                    >
+                        {{ row.facturacion | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
+                    </td>
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                    >
+                        <div class="row-actions flex gap-[10px] whitespace-nowrap">
+                            <button
+                                type="button"
+                                class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                                (click)="open(row)"
+                            >
+                                Detalle
+                            </button>
+                            @if (editable(row)) {
+                                @if (embedded()) {
+                                    <button
+                                        type="button"
+                                        class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                                        (click)="edit.emit(row)"
+                                    >
+                                        Editar productos
+                                    </button>
+                                } @else {
+                                    <a
+                                        class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                                        [routerLink]="[
+                                            '/oportunidades-proyectos/oportunidades',
+                                            row.prospectoId,
+                                            row.id,
+                                        ]"
+                                        >Editar</a
+                                    >
+                                }
+                            }
+                        </div>
+                    </td>
+                </tr>
+            } @empty {
+                <tr class="hover:bg-[#fbfdff]">
+                    <td
+                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        colspan="10"
+                    >
+                        <app-empty-state
+                            title="No hay proyectos"
+                            description="Prueba otros filtros o registra una nueva oportunidad."
+                        />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<app-modal
+    title="Detalle del proyecto"
+    [open]="!!selected()"
+    (closed)="selectedId.set(null)"
+>
+    @if (selected(); as project) {
+        <div class="section-heading flex items-center justify-between gap-[16px] mb-[18px]">
+            <div>
+                <span class="eyebrow text-[11px] tracking-[1.1px] font-semibold text-[#51738e]"
+                    >PROYECTO #{{ project.id }}</span
+                >
+                <h3 class="my-[4px] mx-[0] font-semibold text-[17px]">
+                    {{ client(project.prospectoId)?.razonSocial }}
+                </h3>
+            </div>
+            <span
+                class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
+                >{{ project.etapa }}</span
+            >
+        </div>
+        @if (action() === 'detail') {
+            <dl
+                class="detail-grid my-[24px] mx-[0] grid grid-cols-2 gap-[20px] max-[575.01px]:grid-cols-1"
+            >
+                <div>
+                    <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Área / Solución</dt>
+                    <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                        {{ area(project.areaId) }} / {{ solution(project.solucionId) }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Aplicación</dt>
+                    <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                        {{ application(project.aplicacionId) }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Contacto</dt>
+                    <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                        {{ client(project.prospectoId)?.contacto || 'Sin definir' }} ·
+                        {{ client(project.prospectoId)?.telefono || 'Sin teléfono' }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Correo</dt>
+                    <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                        {{ client(project.prospectoId)?.correo || 'Sin definir' }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-[var(--muted)] text-[12px] mb-[6px]">VPO</dt>
+                    <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                        {{ project.vpo | currency: 'MXN' : 'symbol-narrow' }}
+                        @if (editable(project)) {
+                            <button
+                                type="button"
+                                class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                                (click)="action.set('vpo')"
+                            >
+                                Editar
+                            </button>
+                        }
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-[var(--muted)] text-[12px] mb-[6px]">VPT</dt>
+                    <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                        {{ project.vpt | currency: 'MXN' : 'symbol-narrow' }}
+                    </dd>
+                </div>
+            </dl>
+            @if (project.motivoCancelacion) {
+                <p
+                    class="alert warning py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818]"
+                >
+                    Motivo: {{ project.motivoCancelacion }}
+                </p>
+            }
+            <div class="table-scroll overflow-x-auto">
+                <table class="w-full border-collapse text-[12px] text-left">
+                    <thead>
+                        <tr>
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                            >
+                                SKU / Producto
+                            </th>
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                            >
+                                Cantidad
+                            </th>
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                            >
+                                Precio de venta
+                            </th>
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                            >
+                                Importe
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (product of project.productos; track product.sku) {
+                            <tr class="hover:bg-[#fbfdff]">
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                >
+                                    {{ product.sku
+                                    }}<small
+                                        class="table-subline block text-[11px] whitespace-nowrap mt-[5px]"
+                                        >{{ product.nombre }}</small
+                                    >
+                                    @if (product.pendiente) {
+                                        <small
+                                            class="field-error text-[#b72f40] text-[12px] font-normal"
+                                            >Pendiente de autorización</small
+                                        >
+                                    }
+                                </td>
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                >
+                                    {{ product.cantidad }}
+                                </td>
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                >
+                                    {{ product.precioVenta | currency: 'MXN' : 'symbol-narrow' }}
+                                </td>
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                >
+                                    {{
+                                        product.cantidad * product.precioVenta
+                                            | currency: 'MXN' : 'symbol-narrow'
+                                    }}
+                                </td>
+                            </tr>
+                        } @empty {
+                            <tr class="hover:bg-[#fbfdff]">
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                    colspan="4"
+                                >
+                                    Todavía no hay productos asignados.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (pending(project)) {
+                <div
+                    class="alert warning py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818]"
+                >
+                    <span
+                        >Hay precios pendientes de autorización. Los cambios de etapa están
+                        bloqueados.</span
+                    ><button
+                        type="button"
+                        class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                        (click)="execute('approve')"
+                    >
+                        Simular autorización
+                    </button>
+                </div>
+            }
+            <div
+                class="actions end opportunity-actions flex items-center gap-[10px] flex-wrap justify-end mt-[20px]"
+            >
+                @if (editable(project)) {
+                    <button
+                        type="button"
+                        class="btn btn-text-danger py-[10px] px-[16px] border-[1px] border-solid border-[transparent] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] text-[#b63344] bg-transparent disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                        (click)="action.set('cancel'); error.set('')"
+                    >
+                        Cancelar proyecto
+                    </button>
+                    @if (project.etapa === 'Promoción') {
+                        <button
+                            type="button"
+                            class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                            (click)="execute('negotiate')"
+                        >
+                            Pasar a negociación
+                        </button>
+                    }
+                    @if (project.etapa === 'Promoción' || project.etapa === 'Negociación') {
+                        <button
+                            type="button"
+                            class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                            (click)="action.set('close'); error.set('')"
+                        >
+                            Cerrar proyecto
+                        </button>
+                    }
+                }
+            </div>
+        } @else if (action() === 'cancel') {
+            <p class="muted text-[var(--muted)]">
+                El proyecto quedará cancelado y seguirá disponible para consulta.
+            </p>
+            <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
+                >Motivo de cancelación<select
+                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                    [formControl]="reason"
+                >
+                    <option value="">Selecciona un motivo</option>
+                    @for (reason of reasons; track reason) {
+                        <option>{{ reason }}</option>
+                    }
+                </select></label
+            >
+            @if (reason.value === 'Otro') {
+                <label
+                    class="field opportunity-actions flex flex-col gap-[7px] text-[12px] font-[550] mt-[20px]"
+                    >Describe el motivo<textarea
+                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] resize-y focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                        rows="3"
+                        [formControl]="explanation"
+                    ></textarea>
+                </label>
+            }
+            <div
+                class="actions end opportunity-actions flex items-center gap-[10px] flex-wrap justify-end mt-[20px]"
+            >
+                <button
+                    class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                    type="button"
+                    (click)="action.set('detail')"
+                >
+                    Volver</button
+                ><button
+                    class="btn btn-danger py-[10px] px-[16px] border-[1px] border-solid border-[transparent] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#ba3547] text-white disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                    type="button"
+                    (click)="execute('cancel')"
+                >
+                    Confirmar cancelación
+                </button>
+            </div>
+        } @else if (action() === 'close') {
+            <p>
+                Se cerrará el proyecto y se registrará un ACyS de demostración por
+                <strong>{{ amount(project) | currency: 'MXN' : 'symbol-narrow' }}</strong
+                >.
+            </p>
+            <div
+                class="actions end opportunity-actions flex items-center gap-[10px] flex-wrap justify-end mt-[20px]"
+            >
+                <button
+                    type="button"
+                    class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                    (click)="action.set('detail')"
+                >
+                    Volver</button
+                ><button
+                    type="button"
+                    class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                    (click)="execute('close')"
+                >
+                    Confirmar cierre
+                </button>
+            </div>
+        } @else {
+            <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
+                >VPO (MXN)<input
+                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    [formControl]="vpo"
+            /></label>
+            <div
+                class="actions end opportunity-actions flex items-center gap-[10px] flex-wrap justify-end mt-[20px]"
+            >
+                <button
+                    type="button"
+                    class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                    (click)="action.set('detail')"
+                >
+                    Volver</button
+                ><button
+                    type="button"
+                    class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                    (click)="execute('vpo')"
+                >
+                    Guardar VPO
+                </button>
+            </div>
+        }
+        @if (error()) {
+            <p
+                class="alert warning py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818]"
+                role="alert"
+            >
+                {{ error() }}
+            </p>
+        }
+    }
+</app-modal>

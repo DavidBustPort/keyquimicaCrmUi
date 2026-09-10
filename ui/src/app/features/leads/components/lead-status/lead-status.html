@@ -1,0 +1,7 @@
+<span
+    class="lead-status py-[5px] px-[9px] inline-flex items-center gap-[6px] rounded-[6px] bg-[#fff5df] text-[#946c15] text-[11px] font-semibold whitespace-nowrap before:content-[''] before:w-[5px] before:h-[5px] before:shrink-0 before:rounded-full before:bg-current [&.assigned]:bg-[#eaf4ff] [&.assigned]:text-[#2876a8] [&.developed]:bg-[#eaf8f1] [&.developed]:text-[#267454] [&.rejected]:bg-[#fff0f1] [&.rejected]:text-[#a93b4b]"
+    [class.assigned]="lead().estado === 'Disponible'"
+    [class.developed]="lead().estado === 'Desarrollado'"
+    [class.rejected]="lead().estado === 'Rechazado'"
+    >{{ label() }}</span
+>

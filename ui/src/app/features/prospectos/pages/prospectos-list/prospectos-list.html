@@ -1,0 +1,428 @@
+<div
+    class="page-heading mx-[0] flex justify-between items-center gap-[20px] mt-[4px] mb-[26px] max-[1100.01px]:items-start max-[1100.01px]:flex-col"
+>
+    <div>
+        <span class="eyebrow text-[11px] tracking-[1.1px] font-semibold text-[#51738e]"
+            >GESTIÓN COMERCIAL</span
+        >
+        <h1
+            class="mx-[0] text-[26px] font-[650] tracking-[-0.65px] leading-[1.3] mt-[5px] mb-[7px] max-[575.01px]:text-[23px]"
+        >
+            Lista de Prospectos
+        </h1>
+        <p class="muted m-[0] text-[var(--muted)]">
+            Da seguimiento a tus contactos y nuevas oportunidades.
+        </p>
+    </div>
+    <div class="actions flex items-center gap-[10px] flex-wrap">
+        <button
+            type="button"
+            class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+            [disabled]="!filtered().length"
+            (click)="exportCsv()"
+        >
+            ↓ Exportar CSV</button
+        ><a
+            class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+            routerLink="/prospectos/add"
+            >＋ Nuevo prospecto</a
+        >
+    </div>
+</div>
+@if (store.notice()) {
+    <div
+        class="alert success py-[14px] px-[18px] border-[1px] border-solid border-[#ceecdf] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#eaf8f1] text-[#267454]"
+        role="status"
+    >
+        <span>{{ store.notice() }}</span
+        ><button
+            type="button"
+            class="icon-button"
+            aria-label="Cerrar mensaje"
+            (click)="store.notice.set('')"
+        >
+            ×
+        </button>
+    </div>
+}
+<div class="stats-grid grid grid-cols-3 gap-[16px] mb-[24px] max-[575.01px]:gap-[8px]">
+    <div
+        class="stat-card py-[20px] px-[24px] border-[1px] border-solid border-[var(--border)] rounded-[10px] bg-white max-[1100.01px]:p-[18px] max-[575.01px]:p-[12px]"
+    >
+        <span class="text-[var(--muted)] text-[12px] max-[575.01px]:text-[10px]"
+            >Prospectos encontrados</span
+        ><strong
+            class="block text-[26px] font-semibold tracking-[-0.5px] mt-[8px] max-[1100.01px]:text-[23px] max-[575.01px]:text-[18px]"
+            >{{ filtered().length }}</strong
+        >
+    </div>
+    <div
+        class="stat-card py-[20px] px-[24px] border-[1px] border-solid border-[var(--border)] rounded-[10px] bg-white max-[1100.01px]:p-[18px] max-[575.01px]:p-[12px]"
+    >
+        <span class="text-[var(--muted)] text-[12px] max-[575.01px]:text-[10px]"
+            >Registros completos</span
+        ><strong
+            class="block text-[26px] font-semibold tracking-[-0.5px] mt-[8px] max-[1100.01px]:text-[23px] max-[575.01px]:text-[18px]"
+            >{{ completed() }}
+            <small class="text-[15px] text-[#9aa7b6] font-normal"
+                >/ {{ filtered().length }}</small
+            ></strong
+        >
+    </div>
+    <div
+        class="stat-card py-[20px] px-[24px] border-[1px] border-solid border-[var(--border)] rounded-[10px] bg-white max-[1100.01px]:p-[18px] max-[575.01px]:p-[12px]"
+    >
+        <span class="text-[var(--muted)] text-[12px] max-[575.01px]:text-[10px]">VPO total</span
+        ><strong
+            class="block text-[26px] font-semibold tracking-[-0.5px] mt-[8px] max-[1100.01px]:text-[23px] max-[575.01px]:text-[18px]"
+            >{{ totalVpo() | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</strong
+        >
+    </div>
+</div>
+<section
+    class="panel filters-panel py-[22px] px-[24px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] max-[575.01px]:p-[18px]"
+    aria-label="Filtros de prospectos"
+>
+    <div class="section-heading flex items-center justify-between gap-[16px] mb-[18px]">
+        <h2 class="m-[0] text-[15px] font-[650]">Filtros de búsqueda</h2>
+        <button
+            type="button"
+            class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+            (click)="clear()"
+        >
+            Limpiar filtros
+        </button>
+    </div>
+    <div class="filter-grid grid grid-cols-3 gap-[16px] max-[575.01px]:grid-cols-1">
+        <label
+            class="field search-field flex flex-col gap-[7px] text-[12px] font-[550] [grid-column:span_2] max-[575.01px]:[grid-column:auto]"
+            >Nombre o ID del prospecto<input
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                type="search"
+                [formControl]="filters.controls.search"
+                placeholder="Buscar prospecto…" /></label
+        ><label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
+            >Periodo de registro<input
+                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
+                type="month"
+                [formControl]="filters.controls.period" /></label
+        ><app-select-field
+            label="Tipo de prospecto"
+            fieldId="filter-fuente"
+            placeholder="Todos"
+            [control]="filters.controls.fuente"
+            [options]="sources"
+        /><app-select-field
+            label="Registro"
+            fieldId="filter-registro"
+            placeholder="Todos"
+            [control]="filters.controls.registro"
+            [options]="registrations"
+        /><app-select-field
+            label="Estatus"
+            fieldId="filter-estatus"
+            placeholder="Todos"
+            [control]="filters.controls.estatus"
+            [options]="statuses"
+        />
+    </div>
+    <div
+        class="filter-footer mt-[22px] flex items-center justify-between max-[575.01px]:gap-[12px]"
+    >
+        <label class="checkbox-label flex items-center gap-[8px] text-[12px] cursor-pointer"
+            ><input
+                class="accent-[#007fc7] w-[16px] h-[16px]"
+                type="checkbox"
+                [checked]="showDetails()"
+                (change)="toggleDetails()"
+            />Mostrar evolución de etapas</label
+        ><span class="muted small text-[var(--muted)] text-[12px]">Datos de demostración</span>
+    </div>
+    @if (showDetails()) {
+        <div
+            class="filter-grid advanced-filters border-t-[1px] [border-top-style:solid] border-t-[var(--border)] grid grid-cols-3 gap-[16px] pt-[20px] mt-[20px] max-[575.01px]:grid-cols-1"
+        >
+            <app-select-field
+                label="Etapa del proyecto"
+                fieldId="filter-etapa"
+                placeholder="Todas"
+                [control]="filters.controls.etapa"
+                [options]="stages"
+            /><app-select-field
+                label="Etapa del lead"
+                fieldId="filter-etapa-lead"
+                placeholder="Todas"
+                [control]="filters.controls.etapaLead"
+                [options]="leadStages"
+            />
+        </div>
+    }
+</section>
+<section
+    class="panel table-panel border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
+    aria-label="Listado de prospectos"
+>
+    <div
+        class="table-heading py-[22px] px-[24px] flex justify-between items-center max-[575.01px]:p-[18px]"
+    >
+        <h2 class="m-[0] text-[15px] font-[650]">
+            Prospectos
+            <span
+                class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap ml-[8px]"
+                >{{ filtered().length }}</span
+            >
+        </h2>
+        <span class="muted small text-[var(--muted)] text-[12px]">VPO en MXN</span>
+    </div>
+    <div
+        class="table-scroll overflow-x-auto"
+        tabindex="0"
+        aria-label="Tabla de prospectos, desplazamiento horizontal"
+    >
+        <table class="w-full border-collapse text-[12px] text-left">
+            <thead>
+                <tr>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                    >
+                        ID / Registro
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                    >
+                        Prospecto
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                    >
+                        Fuente
+                    </th>
+                    <th
+                        class="number py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap text-right"
+                    >
+                        VPO
+                    </th>
+                    @if (showDetails()) {
+                        <th
+                            class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        >
+                            GTE-RIK
+                        </th>
+                        <th
+                            class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                        >
+                            RIK
+                        </th>
+                        @for (stage of stages; track stage.value) {
+                            <th
+                                class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                            >
+                                {{ stage.label }}
+                            </th>
+                        }
+                    }
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                    >
+                        Observaciones
+                    </th>
+                    <th
+                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                    >
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (row of rows(); track row.id) {
+                    <tr class="hover:bg-[#fbfdff]">
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            <strong class="id-label block text-[12px] mb-[5px]"
+                                >#{{ row.id }}</strong
+                            ><span
+                                class="status text-[10px] inline-flex items-center gap-[5px] whitespace-nowrap"
+                                [class.complete]="row.registro"
+                                [class.incomplete]="!row.registro"
+                                >{{ row.registro ? 'Completo' : 'Incompleto' }}</span
+                            >
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            <button
+                                class="company-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[inherit] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer text-left hover:underline"
+                                type="button"
+                                (click)="detail.set(row)"
+                            >
+                                {{ row.razonSocial }}</button
+                            ><small
+                                class="muted table-subline text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                                >{{ row.contacto }} · {{ row.estatus }}</small
+                            >
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            <span
+                                class="source-badge py-[4px] px-[8px] bg-[#eef1f6] rounded-[5px] text-[#69798b] text-[11px] font-semibold"
+                                [class.lead-source]="row.fuente === 'LD'"
+                                >{{ row.fuente }}</span
+                            >
+                        </td>
+                        <td
+                            class="number py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
+                        >
+                            <strong>{{
+                                row.vpo | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                            }}</strong>
+                        </td>
+                        @if (showDetails()) {
+                            <td
+                                class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                            >
+                                {{ row.gteEstatus }}
+                            </td>
+                            <td
+                                class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                            >
+                                {{ row.rikEstatus }}
+                            </td>
+                            @for (stage of row.etapas; track stage.nombre) {
+                                <td
+                                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                                >
+                                    @if (stage.proyectos) {
+                                        <span>{{ stage.proyectos }} proy.</span
+                                        ><small
+                                            class="table-subline block text-[11px] whitespace-nowrap mt-[5px]"
+                                            >{{
+                                                stage.importe
+                                                    | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
+                                            }}</small
+                                        >
+                                    } @else {
+                                        <span class="muted text-[var(--muted)]">—</span>
+                                    }
+                                </td>
+                            }
+                        }
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            <span
+                                class="truncate block max-w-[180px] overflow-hidden whitespace-nowrap [text-overflow:ellipsis] text-[var(--muted)]"
+                                [title]="row.observaciones"
+                                >{{ row.observaciones || '—' }}</span
+                            >
+                        </td>
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        >
+                            <div class="row-actions flex gap-[10px] whitespace-nowrap">
+                                <button
+                                    class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                                    type="button"
+                                    [attr.aria-label]="'Ver detalle de ' + row.razonSocial"
+                                    (click)="detail.set(row)"
+                                >
+                                    Ver
+                                </button>
+                                @if (row.fuente !== 'LD') {
+                                    <a
+                                        class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                                        [routerLink]="['/prospectos/edit', row.id]"
+                                        >Editar</a
+                                    >
+                                }
+                                @if (row.registro) {
+                                    <a
+                                        class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                                        [routerLink]="[
+                                            '/oportunidades-proyectos/oportunidades',
+                                            row.id,
+                                        ]"
+                                        >＋ Oportunidad</a
+                                    >
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr class="hover:bg-[#fbfdff]">
+                        <td
+                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                            [attr.colspan]="showDetails() ? 12 : 6"
+                        >
+                            <app-empty-state />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <app-pagination
+        [total]="filtered().length"
+        [page]="page()"
+        [size]="size()"
+        (pageChange)="page.set($event)"
+        (sizeChange)="size.set($event); page.set(1)"
+    />
+</section>
+<app-modal
+    title="Detalle del prospecto"
+    [open]="!!detail()"
+    (closed)="detail.set(null)"
+>
+    @if (detail(); as prospecto) {
+        <div class="section-heading flex items-center justify-between gap-[16px] mb-[18px]">
+            <h3 class="my-[4px] mx-[0] font-semibold text-[17px]">{{ prospecto.razonSocial }}</h3>
+            <span
+                class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
+                >#{{ prospecto.id }}</span
+            >
+        </div>
+        @if (!prospecto.registro) {
+            <div
+                class="alert warning py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818]"
+            >
+                Registro incompleto. Completa la información del prospecto.
+            </div>
+        }
+        <dl
+            class="detail-grid my-[24px] mx-[0] grid grid-cols-2 gap-[20px] max-[575.01px]:grid-cols-1"
+        >
+            @for (field of detailFields(); track field.label) {
+                <div>
+                    <dt class="text-[var(--muted)] text-[12px] mb-[6px]">{{ field.label }}</dt>
+                    <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                        {{ field.value || 'Sin definir' }}
+                    </dd>
+                </div>
+            }
+            <div>
+                <dt class="text-[var(--muted)] text-[12px] mb-[6px]">VPO</dt>
+                <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                    {{ prospecto.vpo | currency: 'MXN' : 'symbol-narrow' }}
+                </dd>
+            </div>
+        </dl>
+        <div class="actions end flex items-center gap-[10px] flex-wrap justify-end">
+            @if (prospecto.fuente !== 'LD') {
+                <a
+                    class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                    [routerLink]="['/prospectos/edit', prospecto.id]"
+                    >Editar prospecto</a
+                >
+            }
+            <button
+                type="button"
+                class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                (click)="detail.set(null)"
+            >
+                Cerrar
+            </button>
+        </div>
+    }
+</app-modal>

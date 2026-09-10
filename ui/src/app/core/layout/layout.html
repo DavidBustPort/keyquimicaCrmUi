@@ -1,0 +1,70 @@
+<a
+    class="skip-link p-[12px] fixed top-[-60px] left-[16px] z-[100] bg-white focus:top-[12px]"
+    href="#main-content"
+    >Ir al contenido</a
+>
+<div
+    class="shell min-h-[100dvh]"
+    [class.collapsed]="desktopCollapsed()"
+    [class.mobile-open]="mobileOpen()"
+    (keydown.escape)="mobileOpen.set(false)"
+>
+    <app-sidebar
+        class="fixed [inset:0_auto_0_0] w-[260px] z-[30] [transition:transform_0.2s_ease] max-[991.01px]:[transform:translateX(-100%)] max-[991.01px]:invisible motion-reduce:[transition:none]"
+        (navigated)="mobileOpen.set(false)"
+        (closed)="mobileOpen.set(false)"
+    />
+    @if (mobileOpen()) {
+        <button
+            class="backdrop hidden max-[991.01px]:border-[0] max-[991.01px]:block max-[991.01px]:fixed max-[991.01px]:[inset:0] max-[991.01px]:z-[25] max-[991.01px]:bg-[#14263b70]"
+            aria-label="Cerrar menú"
+            (click)="mobileOpen.set(false)"
+        ></button>
+    }
+    <div
+        class="main min-w-0 ml-[260px] [transition:margin-left_0.2s_ease] max-[991.01px]:ml-[0] motion-reduce:[transition:none]"
+    >
+        <app-header
+            [desktopOpen]="!desktopCollapsed()"
+            [mobileOpen]="mobileOpen()"
+            [canExpand]="page()?.canExpand ?? false"
+            [expanded]="expanded()"
+            (menuToggle)="toggleSidebar()"
+            (expandToggle)="expanded.set(!expanded())"
+        />
+        <main
+            id="main-content"
+            tabindex="-1"
+            class="content m-[auto] px-[40px] max-w-[1260px] pt-[28px] pb-[48px] max-[991.01px]:p-[24px] max-[575.01px]:py-[20px] max-[575.01px]:px-[16px]"
+            [class.expanded]="expanded()"
+            [class.narrow]="page()?.width === 'narrow'"
+            [class.medium]="page()?.width === 'medium'"
+        >
+            @if (page()?.crumbs?.[0]?.label !== 'Inicio') {
+                <nav
+                    class="breadcrumbs border-b-[1px] [border-bottom-style:solid] border-b-[var(--border)] flex flex-wrap gap-[12px] items-center pb-[20px] mb-[28px] text-[13px] text-[var(--muted)]"
+                    aria-label="Ruta de navegación"
+                >
+                    <a
+                        class="text-[var(--primary)] no-underline"
+                        routerLink="/"
+                        >Inicio</a
+                    >
+                    @for (crumb of page()?.crumbs; track $index; let last = $last) {
+                        <span aria-hidden="true">/</span>
+                        @if (last) {
+                            <span aria-current="page">{{ crumb.label }}</span>
+                        } @else {
+                            <a
+                                class="text-[var(--primary)] no-underline"
+                                [routerLink]="crumb.path"
+                                >{{ crumb.label }}</a
+                            >
+                        }
+                    }
+                </nav>
+            }
+            <router-outlet />
+        </main>
+    </div>
+</div>

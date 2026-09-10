@@ -1,0 +1,135 @@
+<div
+    class="section-heading flex items-center justify-between gap-[16px] mb-[18px] max-[575.01px]:items-start max-[575.01px]:flex-col"
+>
+    <div>
+        <span class="eyebrow text-[11px] tracking-[1.1px] font-semibold text-[#51738e]"
+            >LEAD #{{ lead().id }}</span
+        >
+        <h3 class="my-[4px] mx-[0] font-semibold text-[17px]">{{ lead().empresa }}</h3>
+        <span class="muted small text-[var(--muted)] text-[12px]">Alta: {{ lead().fecha }}</span>
+    </div>
+    <app-lead-status [lead]="lead()" />
+</div>
+@if (action() === 'detail') {
+    <dl class="detail-grid my-[24px] mx-[0] grid grid-cols-2 gap-[20px] max-[575.01px]:grid-cols-1">
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Contacto</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().contacto || 'Sin especificar' }}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Teléfono</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().telefono || 'Sin especificar' }}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Correo electrónico</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().correo || 'Sin especificar' }}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Fuente</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().medio || 'Sin especificar' }}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Ciudad</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().ciudad || 'Sin especificar' }}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Giro de la empresa</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().segmento || 'Sin especificar' }}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Producto de interés</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().producto || 'Sin especificar' }}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-[var(--muted)] text-[12px] mb-[6px]">Comentarios</dt>
+            <dd class="m-[0] text-[13px] [overflow-wrap:anywhere]">
+                {{ lead().comentarios || 'Sin comentarios' }}
+            </dd>
+        </div>
+    </dl>
+    <div
+        class="lead-assignment-summary p-[20px] border-[1px] border-solid border-[var(--border)] grid grid-cols-2 gap-[20px] bg-[#f5f9fd] rounded-[9px] max-[575.01px]:grid-cols-1"
+    >
+        <div>
+            <span class="muted small text-[var(--muted)] text-[12px]">Sucursal</span
+            ><strong class="block mt-[8px] text-[13px] font-semibold">{{ branch() }}</strong>
+        </div>
+        <div>
+            <span class="muted small text-[var(--muted)] text-[12px]">Representante</span
+            ><strong class="block mt-[8px] text-[13px] font-semibold">{{
+                representative()
+            }}</strong>
+        </div>
+    </div>
+    @if (lead().motivo) {
+        <p
+            class="alert warning lead-actions py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818] mt-[22px]"
+        >
+            <span><strong>Motivo de rechazo:</strong> {{ lead().motivo }}</span>
+        </p>
+    }
+    @if (store.view() === 'gerente' && active()) {
+        <div
+            class="actions end lead-actions flex items-center gap-[10px] flex-wrap justify-end mt-[22px]"
+        >
+            <button
+                type="button"
+                class="btn btn-text-danger py-[10px] px-[16px] border-[1px] border-solid border-[transparent] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] text-[#b63344] bg-transparent disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                (click)="action.set('rechazar')"
+            >
+                Rechazar lead</button
+            ><button
+                type="button"
+                class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                (click)="action.set('sucursal')"
+            >
+                Cambiar sucursal</button
+            ><button
+                type="button"
+                class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                (click)="action.set('representante')"
+            >
+                Asignar representante
+            </button>
+        </div>
+    }
+    @if (store.view() === 'representante' && store.canDevelop(lead().id)) {
+        <div
+            class="actions end lead-actions flex items-center gap-[10px] flex-wrap justify-end mt-[22px]"
+        >
+            <a
+                class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+                routerLink="/prospectos/add"
+                [queryParams]="{ leadId: lead().id }"
+                >Desarrollar prospecto →</a
+            >
+        </div>
+    }
+} @else if (action() === 'rechazar') {
+    <app-lead-rejection
+        [leadId]="lead().id"
+        (saved)="action.set('detail')"
+        (cancelled)="action.set('detail')"
+    />
+} @else {
+    <app-lead-assignment
+        [lead]="lead()"
+        [mode]="action() === 'sucursal' ? 'sucursal' : 'representante'"
+        (saved)="action.set('detail')"
+        (cancelled)="action.set('detail')"
+    />
+}
