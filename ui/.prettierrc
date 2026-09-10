@@ -1,19 +1,18 @@
 {
-	"printWidth": 250,
-	"singleQuote": true,
-	"overrides": [
-		{
-			"files": "*.html",
-			"options": {
-				"parser": "angular"
-			}
-		}
-	],
-	"plugins": ["prettier-plugin-tailwindcss"],
 	"tabWidth": 4,
-	"useTabs": true,
-	"semi": false,
-	"trailingComma": "none",
-	"endOfLine": "lf",
-	"singleAttributePerLine": true
+    "useTabs": true,
+    "singleQuote": true,
+    "semi": false,
+    "printWidth": 250,
+    "singleAttributePerLine": true,
+    "trailingComma": "none",
+    "plugins": ["prettier-plugin-tailwindcss"],
+    "overrides": [
+        {
+            "files": "*.html",
+            "options": {
+                "parser": "angular"
+            }
+        }
+    ]
 }

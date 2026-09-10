@@ -1,23 +1,14 @@
 {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "prettier.requireConfig": true,
-    "[html]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[css]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "editor.detectIndentation": false,
-    "typescript.preferences.quoteStyle": "single",
-    "javascript.preferences.quoteStyle": "single",
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true,
-    "typescript.preferences.importModuleSpecifier": "shortest",
-    "javascript.preferences.importModuleSpecifier": "shortest"
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"[html]": {
+		"editor.formatOnSave": true,
+		"editor.formatOnPaste": false,
+		"editor.formatOnType": false,
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.tabSize": 4,
+		"editor.insertSpaces": true
+	},
+	"editor.acceptSuggestionOnEnter": "smart",
+	"editor.tabCompletion": "on"
 }

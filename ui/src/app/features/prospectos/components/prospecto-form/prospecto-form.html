@@ -1,249 +1,256 @@
 <a
-    class="back-link inline-block mb-[18px] no-underline text-[#51738e] text-[13px]"
-    routerLink="/prospectos"
-    >← Volver a prospectos</a
+	class="mb-4 inline-block text-sky-700"
+	routerLink="/prospectos"
+	>← Volver a prospectos</a
 >
-<div
-    class="page-heading mx-[0] flex justify-between items-center gap-[20px] mt-[4px] mb-[26px] max-[1100.01px]:items-start max-[1100.01px]:flex-col"
->
-    <div>
-        <h1
-            class="mx-[0] text-[26px] font-[650] tracking-[-0.65px] leading-[1.3] mt-[5px] mb-[7px] max-[575.01px]:text-[23px]"
-        >
-            {{ prospectoId() === undefined ? 'Nuevo Prospecto' : 'Editar Prospecto' }}
-        </h1>
-        <p class="muted m-[0] text-[var(--muted)]">
-            Información de la empresa y su potencial comercial.
-        </p>
-    </div>
-    <span
-        class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
-        >{{ prospectoId() === undefined ? 'Nuevo registro' : 'ID ' + prospectoId() }}</span
-    >
-</div>
-@if (missing()) {
-    <div
-        class="alert warning py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818]"
-        role="alert"
-    >
-        El prospecto no existe o ha sido eliminado. Verifica el ID o regresa al listado.
-    </div>
+<header class="mb-6">
+	<h1 class="text-2xl font-semibold">{{ prospectoId() === undefined ? 'Nuevo Prospecto' : 'Editar Prospecto' }}</h1>
+	<p class="mt-2 text-slate-500">Información comercial de la sucursal.</p>
+</header>
+@if (!canEdit()) {
+	<p class="rounded-lg bg-blue-50 p-5 text-blue-800">El alta y la edición requieren una sesión de RIK en la sucursal. El gerente tiene acceso de consulta.</p>
 } @else {
-    <form
-        class="panel border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
-        [formGroup]="form"
-        (ngSubmit)="save()"
-        novalidate
-    >
-        @if (prospectoId() === undefined) {
-            <div
-                class="lead-banner py-[22px] px-[28px] border-b-[1px] [border-bottom-style:solid] border-b-[#deedf8] bg-[#f0f8ff] flex justify-between items-center gap-[20px] max-[575.01px]:p-[20px] max-[575.01px]:items-start max-[575.01px]:flex-col"
-            >
-                <div>
-                    <strong class="text-[#286083] font-semibold">¿Ya tienes un lead?</strong>
-                    <p class="mx-[0] text-[12px] text-[#658199] mt-[5px] mb-[0]">
-                        Selecciona uno para completar los datos de contacto.
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                    (click)="modalOpen.set(true)"
-                >
-                    Explorar leads sugeridos
-                </button>
-            </div>
-        }
-        @if (selectedLead(); as lead) {
-            <div
-                class="alert info selected-lead my-[20px] mx-[28px] py-[14px] px-[18px] border-[1px] border-solid border-[#d8eafb] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] bg-[#edf6ff] text-[#326a91] max-[575.01px]:flex-col max-[575.01px]:items-start"
-            >
-                <span
-                    >Lead seleccionado: <strong>{{ lead.empresa }}</strong
-                    >. Completa los campos requeridos para desarrollarlo.</span
-                ><button
-                    type="button"
-                    class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                    (click)="removeLead()"
-                >
-                    Desvincular
-                </button>
-            </div>
-        }
-        <div
-            class="form-section py-[24px] px-[28px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f6] max-[575.01px]:p-[20px]"
-        >
-            <div class="section-heading flex items-center justify-between gap-[16px] mb-[18px]">
-                <h2 class="m-[0] text-[15px] font-[650]">Datos generales</h2>
-                <span class="muted small text-[var(--muted)] text-[12px]"
-                    >* Campos obligatorios</span
-                >
-            </div>
-            <div class="form-grid grid grid-cols-2 gap-[20px] max-[575.01px]:grid-cols-1">
-                <app-form-field
-                    label="Razón social"
-                    forId="razonSocial"
-                    [required]="true"
-                    [error]="error('razonSocial')"
-                    ><input
-                        id="razonSocial"
-                        type="text"
-                        formControlName="razonSocial"
-                        placeholder="Nombre de la empresa"
-                        [attr.aria-required]="true"
-                        [attr.aria-invalid]="!!error('razonSocial')"
-                        [attr.aria-describedby]="
-                            error('razonSocial') ? 'razonSocial-error' : null
-                        " /></app-form-field
-                ><app-form-field
-                    label="Contacto"
-                    forId="contacto"
-                    [required]="!!selectedLead()"
-                    [error]="error('contacto')"
-                    ><input
-                        id="contacto"
-                        type="text"
-                        formControlName="contacto"
-                        placeholder="Nombre completo"
-                        [attr.aria-required]="!!selectedLead()"
-                        [attr.aria-invalid]="!!error('contacto')"
-                        [attr.aria-describedby]="
-                            error('contacto') ? 'contacto-error' : null
-                        " /></app-form-field
-                ><app-form-field
-                    label="Correo electrónico"
-                    forId="correo"
-                    [required]="!!selectedLead()"
-                    [error]="error('correo')"
-                    ><input
-                        id="correo"
-                        type="email"
-                        formControlName="correo"
-                        placeholder="correo@empresa.com"
-                        [attr.aria-required]="!!selectedLead()"
-                        [attr.aria-invalid]="!!error('correo')"
-                        [attr.aria-describedby]="
-                            error('correo') ? 'correo-error' : null
-                        " /></app-form-field
-                ><app-form-field
-                    label="Teléfono"
-                    forId="telefono"
-                    [required]="!!selectedLead()"
-                    [error]="error('telefono')"
-                    ><input
-                        id="telefono"
-                        type="tel"
-                        formControlName="telefono"
-                        placeholder="614 000 0000"
-                        [attr.aria-required]="!!selectedLead()"
-                        [attr.aria-invalid]="!!error('telefono')"
-                        [attr.aria-describedby]="error('telefono') ? 'telefono-error' : null"
-                /></app-form-field>
-            </div>
-        </div>
-        <div
-            class="form-section py-[24px] px-[28px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f6] max-[575.01px]:p-[20px]"
-        >
-            <h2 class="mx-[0] text-[15px] font-[650] mt-[0] mb-[20px]">Clasificación comercial</h2>
-            <div class="form-grid grid grid-cols-2 gap-[20px] max-[575.01px]:grid-cols-1">
-                <app-select-field
-                    label="UEN"
-                    fieldId="uenId"
-                    [control]="form.controls.uenId"
-                    [options]="uens"
-                    [required]="true"
-                    [error]="error('uenId')"
-                    (change)="form.controls.segmentoId.setValue('')"
-                /><app-select-field
-                    label="Segmento"
-                    fieldId="segmentoId"
-                    [control]="form.controls.segmentoId"
-                    [options]="segmentos"
-                    [required]="true"
-                    [error]="error('segmentoId')"
-                /><app-select-field
-                    label="Tipo de cliente"
-                    fieldId="tipoClienteId"
-                    [control]="form.controls.tipoClienteId"
-                    [options]="tipos"
-                    [required]="true"
-                    [error]="error('tipoClienteId')"
-                /><app-select-field
-                    label="Territorio"
-                    fieldId="territorioId"
-                    [control]="form.controls.territorioId"
-                    [options]="territorios"
-                    [required]="true"
-                    [error]="error('territorioId')"
-                /><app-currency-input
-                    [control]="form.controls.vpo"
-                    [error]="error('vpo')"
-                />
-            </div>
-        </div>
-        <div
-            class="form-section py-[24px] px-[28px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f6] max-[575.01px]:p-[20px]"
-        >
-            <app-form-field
-                label="Observaciones RIK"
-                forId="observaciones"
-                [required]="!!selectedLead()"
-                [error]="error('observaciones')"
-            >
-                <textarea
-                    id="observaciones"
-                    formControlName="observaciones"
-                    rows="4"
-                    placeholder="Agrega contexto para el seguimiento del prospecto…"
-                    [attr.aria-required]="!!selectedLead()"
-                    [attr.aria-invalid]="!!error('observaciones')"
-                    [attr.aria-describedby]="error('observaciones') ? 'observaciones-error' : null"
-                ></textarea>
-            </app-form-field>
-        </div>
-        @if (submitted() && form.invalid) {
-            <p
-                class="alert warning my-[20px] mx-[28px] py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] bg-[#fffaec] text-[#8c6818]"
-                role="alert"
-            >
-                Revisa los campos señalados antes de guardar.
-            </p>
-        }
-        @if (saveError()) {
-            <p
-                class="alert warning my-[20px] mx-[28px] py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] bg-[#fffaec] text-[#8c6818]"
-                role="alert"
-            >
-                {{ saveError() }}
-            </p>
-        }
-        <div
-            class="form-footer py-[22px] px-[28px] flex items-center justify-between gap-[16px] bg-[#fcfdff] max-[575.01px]:p-[20px] max-[575.01px]:items-start max-[575.01px]:flex-col"
-        >
-            <span class="muted small text-[var(--muted)] text-[12px]"
-                >Datos de demostración · cambios en esta sesión</span
-            >
-            <div class="actions flex items-center gap-[10px] flex-wrap">
-                <a
-                    class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                    routerLink="/prospectos"
-                    >Cancelar</a
-                ><button
-                    class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                    type="submit"
-                >
-                    {{ prospectoId() === undefined ? 'Crear prospecto' : 'Guardar cambios' }}
-                </button>
-            </div>
-        </div>
-    </form>
+	@if (error()) {
+		<p
+			class="mb-4 rounded-lg bg-red-50 p-4 text-red-800"
+			role="alert"
+		>
+			{{ error() }}
+		</p>
+		@if (!ready() && !loading()) {
+			<button
+				type="button"
+				class="mb-5 text-sky-700"
+				(click)="load()"
+			>
+				Reintentar carga
+			</button>
+		}
+	}
+	@if (loading()) {
+		<p
+			class="p-6 text-slate-500"
+			role="status"
+		>
+			Cargando formulario…
+		</p>
+	} @else if (ready()) {
+		<form
+			[formGroup]="form"
+			(ngSubmit)="save()"
+			novalidate
+			class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+		>
+			@if (prospectoId() === undefined) {
+				<div class="flex flex-wrap items-center justify-between gap-4 bg-sky-50 p-5">
+					<div>
+						<strong>Crear desde un lead</strong>
+						<p class="mt-1 text-sm text-slate-500">Consulta los leads asignados disponibles.</p>
+					</div>
+					<button
+						class="rounded-lg border border-sky-200 bg-white px-4 py-2 text-sky-700"
+						type="button"
+						(click)="modalOpen.set(true)"
+						[disabled]="saving()"
+					>
+						Explorar leads sugeridos
+					</button>
+				</div>
+			}
+			@if (selectedLead(); as lead) {
+				<div class="m-5 flex flex-wrap justify-between gap-4 rounded-lg bg-blue-50 p-4 text-sm">
+					<span
+						>Lead seleccionado: <strong>{{ lead.empresa }}</strong></span
+					><button
+						type="button"
+						class="text-sky-700"
+						(click)="removeLead()"
+						[disabled]="saving()"
+					>
+						Quitar selección
+					</button>
+				</div>
+			}
+			<fieldset
+				[disabled]="saving()"
+				class="grid gap-5 p-6 sm:grid-cols-2"
+			>
+				<app-form-field
+					label="Razón social"
+					forId="razonSocial"
+					[required]="true"
+					[error]="fieldError('razonSocial')"
+					><input
+						id="razonSocial"
+						formControlName="razonSocial"
+						maxlength="180"
+				/></app-form-field>
+				<app-form-field
+					label="Contacto"
+					forId="contacto"
+					[required]="requiresContact()"
+					[error]="fieldError('contacto')"
+					><input
+						id="contacto"
+						formControlName="contacto"
+						maxlength="120"
+				/></app-form-field>
+				<app-form-field
+					label="Correo electrónico"
+					forId="correo"
+					[required]="requiresContact()"
+					[error]="fieldError('correo')"
+					><input
+						id="correo"
+						type="email"
+						formControlName="correo"
+						maxlength="180"
+				/></app-form-field>
+				<app-form-field
+					label="Teléfono"
+					forId="telefono"
+					[required]="requiresContact()"
+					[error]="fieldError('telefono')"
+					><input
+						id="telefono"
+						type="tel"
+						formControlName="telefono"
+						maxlength="30"
+				/></app-form-field>
+				<app-form-field
+					label="UEN"
+					forId="uenId"
+					[required]="true"
+					[error]="fieldError('uenId')"
+					><select
+						id="uenId"
+						formControlName="uenId"
+						(change)="changeUen()"
+					>
+						<option [ngValue]="0">Seleccionar UEN</option>
+						@for (uen of uens(); track uen.id) {
+							<option [ngValue]="uen.id">{{ uen.name }}</option>
+						}
+					</select></app-form-field
+				>
+				<app-form-field
+					label="Segmento"
+					forId="segmentoId"
+					[required]="true"
+					[error]="fieldError('segmentoId')"
+					><select
+						id="segmentoId"
+						formControlName="segmentoId"
+					>
+						<option [ngValue]="0">{{ segmentLoading() ? 'Cargando segmentos…' : 'Seleccionar segmento' }}</option>
+						@for (segment of segments(); track segment.id) {
+							<option [ngValue]="segment.id">{{ segment.name }}</option>
+						}
+					</select></app-form-field
+				>
+				<app-form-field
+					label="ID de tipo de cliente"
+					forId="tipoClienteId"
+					[required]="true"
+					[error]="fieldError('tipoClienteId')"
+					><input
+						id="tipoClienteId"
+						type="number"
+						min="1"
+						step="1"
+						formControlName="tipoClienteId"
+					/>
+					@if (record()?.tipoCliente) {
+						<small>{{ record()?.tipoCliente }}</small>
+					}
+				</app-form-field>
+				<app-form-field
+					label="ID de territorio"
+					forId="territorioId"
+					[required]="true"
+					[error]="fieldError('territorioId')"
+					><input
+						id="territorioId"
+						type="number"
+						min="1"
+						step="1"
+						formControlName="territorioId"
+					/>
+					@if (record()?.territorio) {
+						<small>{{ record()?.territorio }}</small>
+					}
+				</app-form-field>
+				<p class="text-xs text-slate-500 sm:col-span-2">Usa los identificadores vigentes de tu sucursal para tipo de cliente y territorio.</p>
+				<app-form-field
+					label="VPO (MXN)"
+					forId="vpo"
+					[required]="true"
+					[error]="fieldError('vpo')"
+					><input
+						id="vpo"
+						type="number"
+						min="0.01"
+						step="0.01"
+						formControlName="vpo"
+				/></app-form-field>
+				<app-form-field
+					label="Observaciones RIK"
+					forId="observaciones"
+					[required]="requiresContact()"
+					[error]="fieldError('observaciones')"
+				>
+					<textarea
+						id="observaciones"
+						rows="3"
+						maxlength="2000"
+						formControlName="observaciones"
+					></textarea>
+				</app-form-field>
+			</fieldset>
+			@if (record(); as p) {
+				<section class="mx-6 mb-6 rounded-xl bg-slate-50 p-5">
+					<h2 class="font-semibold">Potencial registrado · solo consulta</h2>
+					<dl class="mt-4 grid gap-4 sm:grid-cols-3">
+						<div>
+							<dt class="text-xs text-slate-500">{{ p.segmentoDimension || 'Dimensión' }}</dt>
+							<dd>{{ p.cantidadDimension }}</dd>
+						</div>
+						<div>
+							<dt class="text-xs text-slate-500">Valor por unidad</dt>
+							<dd>{{ p.segmentoValorDimension | currency: 'MXN' : 'symbol-narrow' }}</dd>
+						</div>
+						<div>
+							<dt class="text-xs text-slate-500">VPT registrado</dt>
+							<dd>{{ p.cantidadDimension * (p.segmentoValorDimension || 0) | currency: 'MXN' : 'symbol-narrow' }}</dd>
+						</div>
+					</dl>
+				</section>
+			}
+			<div class="flex justify-end gap-3 border-t border-slate-100 p-5">
+				<a
+					class="rounded-lg border border-slate-200 px-4 py-3"
+					routerLink="/prospectos"
+					>Cancelar</a
+				><button
+					class="rounded-lg bg-sky-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+					type="submit"
+					[disabled]="saving() || segmentLoading()"
+				>
+					{{ saving() ? 'Guardando…' : prospectoId() === undefined ? 'Crear prospecto' : 'Guardar cambios' }}
+				</button>
+			</div>
+		</form>
+	}
 }
 <app-modal
-    title="Leads sugeridos"
-    [open]="modalOpen()"
-    (closed)="modalOpen.set(false)"
+	title="Leads sugeridos"
+	[open]="modalOpen()"
+	(closed)="modalOpen.set(false)"
 >
-    @if (modalOpen()) {
-        <app-leads-picker (selected)="selectLead($event)" />
-    }
+	@if (modalOpen()) {
+		<app-leads-picker
+			[requestedId]="leadId()"
+			(selected)="selectLead($event)"
+		/>
+	}
 </app-modal>
