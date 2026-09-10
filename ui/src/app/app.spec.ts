@@ -23,7 +23,7 @@ describe('CRM layout and migrated routes', () => {
             ['/oportunidades-proyectos/oportunidades', 'Oportunidades'],
             ['/oportunidades-proyectos/oportunidades/42', 'Oportunidades'],
             ['/oportunidades-proyectos/oportunidades/42/7', 'Oportunidades'],
-            ['/leads', 'Leads'],
+            ['/leads', 'Sin acceso'],
             ['/reportes', 'Reportes'],
             ['/gestion-proyectos', 'Gestión de Oportunidades'],
             ['/tracking-cerrados', 'Reporte de estado comercial'],
@@ -38,7 +38,7 @@ describe('CRM layout and migrated routes', () => {
             await fixture.whenStable()
             fixture.detectChanges()
             const element = fixture.nativeElement as HTMLElement
-            expect(element.querySelector('h1')?.textContent, url).toBe(title)
+            expect(element.querySelector('h1')?.textContent?.trim(), url).toBe(title)
             expect(element.querySelector('app-header'), url).toBeTruthy()
             expect(element.querySelector('#sidebar'), url).toBeTruthy()
         }

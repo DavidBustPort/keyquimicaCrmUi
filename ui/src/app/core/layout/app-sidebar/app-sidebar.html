@@ -27,29 +27,29 @@
         <p class="section-label m-[0] px-[26px] pt-[20px] pb-[10px] text-[#ffffffac] text-[12px]">
             Páginas
         </p>
-        @for (item of items; track item.path) {
-            <a
-                class="nav-link py-[14px] px-[23px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[13px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[14px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
-                [routerLink]="item.path"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-                ariaCurrentWhenActive="page"
-                (click)="navigated.emit()"
+        @for (item of visibleItems(); track item.path) {
+        <a
+            class="nav-link py-[14px] px-[23px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[13px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[14px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+            ariaCurrentWhenActive="page"
+            (click)="navigated.emit()"
+        >
+            <svg
+                class="shrink-0 w-[19px] h-[19px] opacity-[0.8]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
             >
-                <svg
-                    class="shrink-0 w-[19px] h-[19px] opacity-[0.8]"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                >
-                    <path [attr.d]="item.icon" />
-                </svg>
-                <span>{{ item.label }}</span>
-            </a>
+                <path [attr.d]="item.icon" />
+            </svg>
+            <span>{{ item.label }}</span>
+        </a>
         }
         <button
             class="nav-link py-[14px] px-[23px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[13px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[14px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
@@ -69,12 +69,7 @@
                 aria-hidden="true"
             >
                 <path d="M3 3v18h18M7 14l4-4 4 3 6-7" /></svg
-            ><span>Reportes</span
-            ><span
-                class="chevron ml-[auto]"
-                aria-hidden="true"
-                >⌄</span
-            >
+            ><span>Reportes</span><span class="chevron ml-[auto]" aria-hidden="true">⌄</span>
         </button>
         <div
             id="report-links"
@@ -82,18 +77,18 @@
             class="subnav pt-[6px] pr-[0] pb-[10px] pl-[22px] [&[hidden]]:hidden"
         >
             @for (report of reports; track report.path) {
-                <a
-                    class="nav-link py-[11px] px-[18px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[12px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[12px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
-                    [routerLink]="report.path"
-                    routerLinkActive="active"
-                    ariaCurrentWhenActive="page"
-                    (click)="navigated.emit()"
-                    ><span
-                        class="report-dot w-[5px] h-[5px] rounded-full bg-[currentColor] shrink-0 opacity-[0.7]"
-                        aria-hidden="true"
-                    ></span
-                    >{{ report.label }}</a
-                >
+            <a
+                class="nav-link py-[11px] px-[18px] border-t-[0] border-r-[0] border-b-[0] border-l-[3px] [border-left-style:solid] border-l-[transparent] flex items-center gap-[12px] w-full bg-transparent text-[#ffffffd9] no-underline text-left [font-family:inherit] text-[12px] [font-weight:inherit] [font-style:inherit] leading-[1.5] cursor-pointer hover:bg-[#ffffff12] hover:text-white [&.active]:border-l-white [&.active]:bg-[linear-gradient(90deg,#ffffff29,#ffffff05)] [&.active]:text-white"
+                [routerLink]="report.path"
+                routerLinkActive="active"
+                ariaCurrentWhenActive="page"
+                (click)="navigated.emit()"
+                ><span
+                    class="report-dot w-[5px] h-[5px] rounded-full bg-[currentColor] shrink-0 opacity-[0.7]"
+                    aria-hidden="true"
+                ></span
+                >{{ report.label }}</a
+            >
             }
         </div>
     </nav>

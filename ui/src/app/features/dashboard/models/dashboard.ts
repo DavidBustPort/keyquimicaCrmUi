@@ -18,6 +18,8 @@ export interface StageMetric {
 }
 export interface DashboardData {
     stages: StageMetric[]
+    pipelineBudget?: number
+    metricAmounts?: number[]
     pipeline: number
     closed: number
     closeGoal: number

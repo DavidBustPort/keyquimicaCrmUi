@@ -13,7 +13,11 @@ export class DashboardMetrics {
     readonly cards = computed(() => [
         ...this.data()
             .stages.slice(0, 3)
-            .map((s) => ({ label: s.name, value: s.amount, color: s.color })),
+            .map((s, i) => ({
+                label: s.name,
+                value: this.data().metricAmounts?.[i] ?? s.amount,
+                color: s.color,
+            })),
         { label: 'Embudo', value: this.data().pipeline, color: '#dc3545' },
         { label: 'Cierre', value: this.data().closed, color: '#28a745' },
         { label: 'Meta de cierre', value: this.data().closeGoal, color: '#6f42c1' },

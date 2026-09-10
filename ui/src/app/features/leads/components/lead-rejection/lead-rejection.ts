@@ -1,6 +1,6 @@
 import { Component, inject, input, output, signal } from '@angular/core'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
-import { LeadsMockStore } from '@features/leads/data-access/leads-mock.store'
+import { LeadsService } from '@features/leads/data-access/leads.service'
 import { MOTIVOS_RECHAZO } from '@features/leads/data-access/leads.catalogos'
 import { SelectField } from '@shared/ui/select-field/select-field'
 @Component({
@@ -12,25 +12,26 @@ export class LeadRejection {
     readonly leadId = input.required<number>()
     readonly saved = output<void>()
     readonly cancelled = output<void>()
-    readonly store = inject(LeadsMockStore)
+    readonly store = inject(LeadsService)
     readonly reasons = MOTIVOS_RECHAZO
     readonly reason = new FormControl('', { nonNullable: true })
     readonly explanation = new FormControl('', { nonNullable: true })
     readonly error = signal('')
-    save() {
+    async save() {
+        if (this.store.saving()) return
         this.error.set('')
         const reason = this.reasons.find((r) => r.value === this.reason.value)
         if (!reason) {
             this.error.set('Selecciona un motivo de rechazo.')
             return
         }
-        const detail = reason.value === 'otro' ? this.explanation.value.trim() : reason.label
+        const detail = reason.value === '3' ? this.explanation.value.trim() : reason.label
         if (!detail) {
             this.error.set('Especifica el motivo de rechazo.')
             return
         }
         try {
-            this.store.reject(this.leadId(), detail)
+            await this.store.reject(this.leadId(), Number(reason.value), detail)
             this.saved.emit()
         } catch (e) {
             this.error.set((e as Error).message)

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core'
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router'
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { filter, map, startWith } from 'rxjs'
 import { AppHeader } from './app-header/app-header'
@@ -7,7 +7,7 @@ import { AppSidebar } from './app-sidebar/app-sidebar'
 @Component({
     host: { class: 'block' },
     selector: 'app-layout',
-    imports: [AppHeader, AppSidebar, RouterOutlet, RouterLink],
+    imports: [AppHeader, AppSidebar, RouterOutlet],
     templateUrl: './layout.html',
     styleUrl: './layout.css',
 })
@@ -24,22 +24,16 @@ export class Layout {
                 this.mobileOpen.set(false)
                 this.expanded.set(false)
                 let route = this.router.routerState.snapshot.root
-                const segments: string[] = []
-                const crumbs: { label: string; path: string }[] = []
                 let canExpand = false
                 let width = ''
+                let showFilterByRik = false
                 while (route.firstChild) {
                     route = route.firstChild
-                    segments.push(...route.url.map((segment) => segment.path))
-                    if (route.data['breadcrumb'])
-                        crumbs.push({
-                            label: route.data['breadcrumb'],
-                            path: '/' + segments.join('/'),
-                        })
                     canExpand = route.data['canExpandContainer'] ?? false
                     width = route.data['width'] ?? ''
+                    showFilterByRik = route.data['showFilterByRik'] === true
                 }
-                return { crumbs, canExpand, width }
+                return { canExpand, width, showFilterByRik }
             }),
         ),
     )

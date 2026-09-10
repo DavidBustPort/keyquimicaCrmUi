@@ -1,166 +1,106 @@
-<div
-    class="page-heading mx-[0] flex justify-between items-center gap-[20px] mt-[4px] mb-[26px] max-[1100.01px]:items-start max-[1100.01px]:flex-col"
->
-    <div>
-        <span class="eyebrow text-[11px] tracking-[1.1px] font-semibold text-[#51738e]"
-            >GESTIÓN COMERCIAL</span
-        >
-        <h1
-            class="mx-[0] text-[26px] font-[650] tracking-[-0.65px] leading-[1.3] mt-[5px] mb-[7px] max-[575.01px]:text-[23px]"
-        >
-            Leads
-        </h1>
-        <p class="muted m-[0] text-[var(--muted)]">
-            {{
-                store.view() === 'gerente'
-                    ? 'Distribuye los leads y da seguimiento a su desarrollo.'
-                    : 'Consulta los leads asignados y encuentra tu próxima oportunidad.'
-            }}
-        </p>
-    </div>
-    <div class="lead-view flex flex-col gap-[7px]">
-        <span class="muted small text-[var(--muted)] text-[12px]">Vista de demostración</span>
-        <div
-            class="view-buttons p-[4px] flex gap-[4px] bg-[#eaf0f6] rounded-[8px]"
-            role="group"
-            aria-label="Vista de demostración"
-        >
-            <button
-                class="py-[9px] px-[15px] border-[0] rounded-[6px] bg-transparent text-[#65788b] cursor-pointer font-semibold text-[12px] [&.active]:bg-white [&.active]:text-[#007cbe] [&.active]:shadow-[0_2px_5px_#24456312]"
-                type="button"
-                [class.active]="store.view() === 'representante'"
-                [attr.aria-pressed]="store.view() === 'representante'"
-                (click)="setView('representante')"
-            >
-                Representante</button
-            ><button
-                class="py-[9px] px-[15px] border-[0] rounded-[6px] bg-transparent text-[#65788b] cursor-pointer font-semibold text-[12px] [&.active]:bg-white [&.active]:text-[#007cbe] [&.active]:shadow-[0_2px_5px_#24456312]"
-                type="button"
-                [class.active]="store.view() === 'gerente'"
-                [attr.aria-pressed]="store.view() === 'gerente'"
-                (click)="setView('gerente')"
-            >
-                Gerente
-            </button>
-        </div>
-    </div>
+<div class="mb-6">
+    <h1 class="text-[26px] font-semibold mb-2">Leads</h1>
+    <p class="text-(--muted)">
+        {{ store.auth.isManager() ? 'Distribuye los leads y da seguimiento a su desarrollo.' :
+        'Consulta los leads asignados a tu cuenta.' }}
+    </p>
 </div>
-@if (store.notice()) {
-    <div
-        class="alert success py-[14px] px-[18px] border-[1px] border-solid border-[#ceecdf] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#eaf8f1] text-[#267454]"
-        role="status"
-    >
-        <span>{{ store.notice() }}</span
-        ><button
-            type="button"
-            class="icon-button"
-            aria-label="Cerrar mensaje"
-            (click)="store.notice.set('')"
-        >
-            ×
-        </button>
-    </div>
+@if (store.allowed()) { @if(store.notice()) {
+<p role="status" class="rounded-lg bg-green-50 text-green-800 p-4 mb-5">{{ store.notice() }}</p>
 }
-<div
-    class="lead-stats grid grid-cols-4 gap-[16px] mb-[24px] max-[575.01px]:grid-cols-2 max-[575.01px]:gap-[10px]"
->
-    @for (status of summaries(); track status.value) {
-        <button
-            type="button"
-            class="lead-stat py-[19px] px-[22px] border-[1px] border-solid border-[var(--border)] text-left bg-white rounded-[10px] text-[var(--text)] cursor-pointer max-[575.01px]:p-[15px] [&.selected-stat]:bg-[#eff8ff] [&.selected-stat]:border-[#72bfea]"
-            [class.selected-stat]="filters.controls.estado.value === status.value"
-            [attr.aria-pressed]="filters.controls.estado.value === status.value"
-            (click)="
-                filters.controls.estado.setValue(
-                    filters.controls.estado.value === status.value ? '' : status.value
-                )
-            "
-        >
-            <span class="text-[12px] text-[var(--muted)]">{{ status.label }}</span
-            ><strong class="block mt-[9px] text-[27px] font-semibold">{{ status.count }}</strong>
-        </button>
-    }
-</div>
 <section
-    class="panel filters-panel py-[22px] px-[24px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] max-[575.01px]:p-[18px]"
+    class="rounded-xl border border-(--border) bg-white p-5 mb-6"
     aria-label="Filtros de leads"
 >
-    <div class="section-heading flex items-center justify-between gap-[16px] mb-[18px]">
-        <h2 class="m-[0] text-[15px] font-[650]">Filtros de búsqueda</h2>
+    <div class="flex justify-between items-center gap-4 mb-4">
+        <h2 class="font-semibold">Filtros de búsqueda</h2>
         <button
             type="button"
-            class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
-            (click)="filters.reset()"
+            class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#cbddeb] bg-[#f5f9ff] px-3 py-2 text-sm font-semibold text-[#165da9] transition-colors hover:border-[#91bde3] hover:bg-[#e8f2ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007fc7] disabled:cursor-not-allowed disabled:opacity-40"
+            [disabled]="!store.search()"
+            (click)="store.setSearch('')"
         >
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 4v6h6M3 10a9 9 0 1 1 2 9" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
             Limpiar filtros
         </button>
     </div>
-    <div class="filter-grid grid grid-cols-3 gap-[16px] max-[575.01px]:grid-cols-1">
-        <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
+    <div class="flex flex-wrap items-end gap-4">
+        <label class="grid gap-2 text-sm w-full sm:max-w-[420px]"
             >Buscar lead<input
-                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
                 type="search"
-                placeholder="Empresa, contacto, producto o ID…"
-                [formControl]="filters.controls.search" /></label
-        ><app-select-field
-            label="Estatus"
-            fieldId="lead-status-filter"
-            placeholder="Todos"
-            [control]="filters.controls.estado"
-            [options]="statuses"
-        />
-        @if (store.view() === 'gerente') {
-            <app-select-field
-                label="Sucursal"
-                fieldId="lead-branch-filter"
-                placeholder="Todas"
-                [control]="filters.controls.sucursal"
-                [options]="branches"
-            />
-        } @else {
-            <div
-                class="lead-user-hint flex flex-col justify-center gap-[8px] pl-[16px] max-[575.01px]:pl-[0]"
+                class="border border-(--border) rounded-lg px-3 py-2.5 w-full"
+                placeholder="Buscar leads…"
+                [ngModel]="store.search()"
+                (ngModelChange)="store.setSearch($event)"
+        /></label>
+        <button
+            type="button"
+            class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#007fc7] bg-[#007fc7] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#006dae] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007fc7] disabled:cursor-wait disabled:opacity-50"
+            aria-label="Actualizar leads"
+            [disabled]="store.isLoading()"
+            (click)="store.refresh()"
+        >
+            <svg
+                class="size-4"
+                [class.animate-spin]="store.isLoading()"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
             >
-                <span class="muted small text-[var(--muted)] text-[12px]"
-                    >Representante de demostración</span
-                ><strong class="text-[12px] font-semibold">Ana Torres · Chihuahua Norte</strong>
-            </div>
-        }
+                <path
+                    d="M20 7v5h-5M4 17v-5h5M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+            Actualizar
+        </button>
     </div>
 </section>
 <section
-    class="panel border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
+    class="rounded-xl border border-(--border) bg-white overflow-hidden mb-6"
+    [attr.aria-busy]="store.isLoading()"
 >
-    <div
-        class="table-heading py-[22px] px-[24px] flex justify-between items-center max-[575.01px]:p-[18px]"
-    >
-        <h2 class="m-[0] text-[15px] font-[650]">
-            {{ store.view() === 'gerente' ? 'Todos los leads' : 'Mis leads' }}
-            <span
-                class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap ml-[8px]"
-                >{{ filtered().length }}</span
-            >
+    <div class="p-5 flex justify-between items-center">
+        <h2 class="font-semibold">
+            {{ store.auth.isManager() ? 'Leads de la sucursal' : 'Mis leads' }}
         </h2>
-        <span class="muted small text-[var(--muted)] text-[12px]">Datos de demostración</span>
+        <span class="text-sm text-(--muted)">{{ store.total() }} registros</span>
     </div>
+    @if(store.isLoading()) {
+    <div role="status" class="m-5 flex items-center gap-3 rounded-xl border border-[#9cc8ee] bg-[#e4f1ff] px-5 py-4 text-[15px] font-semibold text-[#124f87] shadow-sm">
+        <span class="size-5 shrink-0 rounded-full border-2 border-[#a4c9e9] border-t-[#1268ae] motion-safe:animate-spin" aria-hidden="true"></span>
+        Cargando leads…
+    </div>
+    } @else if(store.error()) {
+    <div role="alert" class="p-6 text-red-700">
+        {{ store.error() }}
+        <button type="button" class="underline" (click)="store.refresh()">Reintentar</button>
+    </div>
+    } @else {
     <app-leads-table
-        [rows]="rows()"
-        [manager]="store.view() === 'gerente'"
-        (selected)="selectedId.set($event)"
-    /><app-pagination
-        [total]="filtered().length"
-        [page]="currentPage()"
-        [size]="size()"
-        (pageChange)="page.set($event); selectedId.set(null)"
-        (sizeChange)="size.set($event); page.set(1); selectedId.set(null)"
+        [rows]="store.leads()"
+        [manager]="store.auth.isManager()"
+        (selected)="store.selectedId.set($event)"
     />
+    <app-pagination
+        [total]="store.total()"
+        [page]="store.page()"
+        [size]="store.size()"
+        (pageChange)="store.setPage($event)"
+        (sizeChange)="store.setSize($event)"
+    />
+    }
 </section>
 <app-modal
     title="Detalle del lead"
-    [open]="!!selected()"
-    (closed)="selectedId.set(null)"
+    [open]="!!store.selected()"
+    (closed)="!store.saving() && store.selectedId.set(null)"
 >
-    @if (selected(); as lead) {
-        <app-lead-detail [lead]="lead" />
-    }
+    @if(store.selected(); as lead) { <app-lead-detail [lead]="lead" /> }
 </app-modal>
+}

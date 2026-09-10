@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core'
 import { Prospecto, ProspectoFormValue } from '@features/prospectos/models/prospecto'
-import { LeadsMockStore } from '@features/leads/data-access/leads-mock.store'
+import { ProspectosLeadsDemoStore } from './prospectos-leads-demo.store'
 export const UENS = [
     { value: '1', label: 'Institucional' },
     { value: '2', label: 'Industrial' },
@@ -68,7 +68,7 @@ export class ProspectosMockStore {
             })),
         })),
     )
-    readonly leadsStore = inject(LeadsMockStore)
+    readonly leadsStore = inject(ProspectosLeadsDemoStore)
     readonly leads = this.leadsStore.leads
     save(value: ProspectoFormValue, id?: number, leadId?: number) {
         if (id !== undefined) {

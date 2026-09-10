@@ -64,5 +64,15 @@ interface TiempoPorEtapaList {
 }
 
 export interface DashboardQuery {
-    periodo: 'Actual' | 'TresMesesAtras'
+    StartMonth: number
+    StartYear: number
+    EndMonth: number
+    EndYear: number
+    IsManager: boolean
+    RiksId: string | null
+    SucursalesId: string | null
+}
+export interface DashboardCatalog {
+    id: number
+    name: string
 }

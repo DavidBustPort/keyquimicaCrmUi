@@ -1,105 +1,104 @@
 <section
-    class="panel filters p-[20px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
+    class="rounded-xl border border-(--border) bg-white p-5 mb-6"
     aria-label="Filtros del dashboard"
 >
-    <div
-        class="filter-intro flex justify-between items-center gap-[12px] mb-[16px] max-[450.01px]:[align-items:start] max-[450.01px]:flex-col"
-    >
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
             <strong>Vista comercial</strong>
-            <p class="muted small my-[4px] mx-[0] text-[var(--muted)] text-[12px]">
-                Datos de demostración · últimos 12 meses
+            <p class="text-xs text-(--muted) mt-1">
+                Selecciona el alcance y el periodo de consulta
             </p>
         </div>
-        <span
-            class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
-            >{{ draft().mode === 'central' ? 'Oficina central' : 'Chihuahua Norte' }}</span
+        <span class="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700"
+            >{{ auth.isCentral() ? 'Oficina central' : (auth.isManager() ? 'Gerente · ' : 'Sucursal
+            · ') + auth.sucursalId() }}</span
         >
     </div>
-    <form
-        class="grid grid-cols-3 gap-[16px] items-end max-[700.01px]:grid-cols-2 max-[450.01px]:grid-cols-1"
-        (ngSubmit)="apply()"
-    >
-        <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
-            >Vista de prueba<select
-                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                name="mode"
-                [ngModel]="draft().mode"
-                (ngModelChange)="mode($event)"
+    <form (ngSubmit)="store.apply()" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+        @if (auth.isCentral()) {
+        <label class="grid gap-2 text-sm"
+            >Grupo
+            <select
+                name="group"
+                class="rounded-lg border border-(--border) bg-white p-3"
+                [ngModel]="draft().group"
+                (ngModelChange)="store.group($event)"
             >
-                <option value="central">Oficina central</option>
-                <option value="gerente">Gerente</option>
-                <option value="representante">Representante · Ana Torres</option>
-            </select></label
+                <option value="">Todos los grupos</option>
+                @for (group of groups; track group; let i = $index) {
+                <option [value]="i + 1">{{ group }}</option>
+                }
+            </select>
+        </label>
+        <app-multi-select
+            label="Sucursales"
+            [options]="branches()"
+            [selected]="draft().branches"
+            (selectionChange)="store.selectBranches($event)"
+        />
+        <app-multi-select
+            label="RIKs por sucursal"
+            [options]="reps()"
+            [selected]="draft().representatives"
+            (selectionChange)="store.selectReps($event)"
+        />
+        }
+        <app-month-calendar
+            label="Desde"
+            [value]="draft().start"
+            [max]="draft().end"
+            (valueChange)="store.updateDate('start',$event)"
+        />
+        <app-month-calendar
+            label="Hasta"
+            [value]="draft().end"
+            [min]="draft().start"
+            (valueChange)="store.updateDate('end',$event)"
+        />
+        <div
+            class="self-end"
+            [class.md:justify-self-end]="!auth.isCentral()"
+            [class.w-full]="auth.isCentral()"
         >
-        @if (draft().mode === 'central') {
-            <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
-                >Grupo<select
-                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                    name="group"
-                    [ngModel]="draft().group"
-                    (ngModelChange)="group($event)"
+            <button
+                type="submit"
+                class="inline-flex w-full h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#007fc7] bg-[#007fc7] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#006dae] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007fc7] disabled:cursor-wait disabled:opacity-50"
+                aria-label="Actualizar dashboard"
+                [disabled]="store.catalogLoading() || store.dashboardResource.isLoading() || !auth.isFullyAuthenticated()"
+            >
+                <svg
+                    class="size-4"
+                    [class.animate-spin]="store.catalogLoading() || store.dashboardResource.isLoading()"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
                 >
-                    @for (group of groups; track group.value) {
-                        <option [value]="group.value">{{ group.label }}</option>
-                    }
-                </select></label
-            >
-            <app-multi-select
-                label="Sucursales"
-                [options]="branches()"
-                [selected]="draft().branches"
-                (selectionChange)="selectBranches($event)"
-            />
-        }
-        @if (draft().mode !== 'representante') {
-            <app-multi-select
-                label="Representantes"
-                [options]="reps()"
-                [selected]="draft().representatives"
-                (selectionChange)="selectReps($event)"
-            />
-        }
-        <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
-            >Desde<input
-                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                type="month"
-                name="start"
-                required
-                [ngModel]="draft().start"
-                (ngModelChange)="update('start', $event)"
-        /></label>
-        <label class="field grid flex-col gap-[7px] text-[13px] font-[550]"
-            >Hasta<input
-                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                type="month"
-                name="end"
-                required
-                [ngModel]="draft().end"
-                (ngModelChange)="update('end', $event)"
-        /></label>
-        <button
-            class="btn-primary border-[#007fc7] bg-[#007fc7] text-white min-h-[40px] hover:bg-[#006dae]"
-            type="submit"
-        >
-            Actualizar
-        </button>
+                    <path
+                        d="M20 7v5h-5M4 17v-5h5M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+                Actualizar
+            </button>
+            <p class="text-sm leading-5 text-(--muted) mt-2">Consulta por mes y año</p>
+        </div>
     </form>
-    @if (store.error()) {
-        <p
-            class="error text-[#b42318]"
-            role="alert"
-        >
-            {{ store.error() }}
-        </p>
-    }
-    <p
-        class="muted small text-[var(--muted)] text-[12px]"
-        aria-live="polite"
-    >
-        Periodo aplicado: {{ store.filter().start }} — {{ store.filter().end }}
-        @if (store.refreshed()) {
-            · Indicadores actualizados
+    @if (auth.isCentral() && draft().branches.length !== 1) {
+    <p class="text-xs text-(--muted) mt-3">Selecciona una sola sucursal para filtrar por RIK.</p>
+    } @if (store.error()) {
+    <p role="alert" class="text-red-700 mt-3">
+        {{ store.error() }} @if (store.error().includes('cargar')) {
+        <button type="button" class="underline" (click)="store.retryCatalogs()">
+            Reintentar filtros
+        </button>
         }
     </p>
+    } @if (store.applied(); as applied) {
+    <p class="text-xs text-(--muted) mt-4" aria-live="polite">
+        Periodo consultado: {{ applied.start }} — {{ applied.end }}
+    </p>
+    }
 </section>

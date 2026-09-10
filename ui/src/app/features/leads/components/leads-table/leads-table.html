@@ -32,11 +32,11 @@
                     Producto de interés
                 </th>
                 @if (manager()) {
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    >
-                        Sucursal / Representante
-                    </th>
+                <th
+                    class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
+                >
+                    Sucursal / Representante
+                </th>
                 }
                 <th
                     class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
@@ -47,84 +47,83 @@
         </thead>
         <tbody>
             @for (lead of rows(); track lead.id) {
-                <tr class="hover:bg-[#fbfdff]">
-                    <td
-                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+            <tr class="hover:bg-[#fbfdff]">
+                <td
+                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                >
+                    <app-lead-status [lead]="lead" />
+                </td>
+                <td
+                    class="lead-date py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                >
+                    {{ lead.fecha }}
+                </td>
+                <td
+                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                >
+                    <button
+                        type="button"
+                        class="company-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[inherit] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer text-left hover:underline"
+                        (click)="selected.emit(lead.id)"
                     >
-                        <app-lead-status [lead]="lead" />
-                    </td>
-                    <td
-                        class="lead-date py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                        {{ lead.empresa }}</button
+                    ><small
+                        class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                        >#{{ lead.id }} · {{ lead.contacto || 'Sin contacto' }}</small
                     >
-                        {{ lead.fecha }}
-                    </td>
-                    <td
-                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                </td>
+                <td
+                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                >
+                    {{ lead.segmento || 'Sin especificar' }}
+                </td>
+                <td
+                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                >
+                    <span
+                        class="truncate block max-w-[180px] overflow-hidden whitespace-nowrap [text-overflow:ellipsis] text-[var(--muted)]"
+                        [title]="lead.producto"
+                        >{{ lead.producto || 'Sin especificar' }}</span
+                    ><small
+                        class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                        >{{ lead.medio }}</small
                     >
-                        <button
-                            type="button"
-                            class="company-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[inherit] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer text-left hover:underline"
-                            (click)="selected.emit(lead.id)"
-                        >
-                            {{ lead.empresa }}</button
-                        ><small
-                            class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
-                            >#{{ lead.id }} · {{ lead.contacto || 'Sin contacto' }}</small
-                        >
-                    </td>
-                    <td
-                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                </td>
+                @if (manager()) {
+                <td
+                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                >
+                    {{ lead.sucursal || 'Sin sucursal' }}<small
+                        class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
+                        >{{ lead.representanteId || 'Sin asignar' }}</small
                     >
-                        {{ lead.segmento || 'Sin especificar' }}
-                    </td>
-                    <td
-                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                </td>
+                }
+                <td
+                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                >
+                    <button
+                        type="button"
+                        class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
+                        [attr.aria-label]="'Ver detalle de ' + lead.empresa"
+                        (click)="selected.emit(lead.id)"
                     >
-                        <span
-                            class="truncate block max-w-[180px] overflow-hidden whitespace-nowrap [text-overflow:ellipsis] text-[var(--muted)]"
-                            [title]="lead.producto"
-                            >{{ lead.producto || 'Sin especificar' }}</span
-                        ><small
-                            class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
-                            >{{ lead.medio }}</small
-                        >
-                    </td>
-                    @if (manager()) {
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        >
-                            {{ branch(lead.sucursalId)
-                            }}<small
-                                class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
-                                >{{ representative(lead.representanteId) }}</small
-                            >
-                        </td>
-                    }
-                    <td
-                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                    >
-                        <button
-                            type="button"
-                            class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
-                            [attr.aria-label]="'Ver detalle de ' + lead.empresa"
-                            (click)="selected.emit(lead.id)"
-                        >
-                            Ver detalle →
-                        </button>
-                    </td>
-                </tr>
+                        Ver detalle →
+                    </button>
+                </td>
+            </tr>
             } @empty {
-                <tr class="hover:bg-[#fbfdff]">
-                    <td
-                        class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        [attr.colspan]="manager() ? 7 : 6"
-                    >
-                        <app-empty-state
-                            title="No hay leads para mostrar"
-                            description="Prueba otra búsqueda o limpia los filtros."
-                        />
-                    </td>
-                </tr>
+            <tr class="hover:bg-[#fbfdff]">
+                <td
+                    class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
+                    [attr.colspan]="manager() ? 7 : 6"
+                >
+                    <app-empty-state
+                        title="No hay leads para mostrar"
+                        description="Prueba otra búsqueda o limpia los filtros."
+                    />
+                </td>
+            </tr>
             }
         </tbody>
     </table>

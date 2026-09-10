@@ -1,14 +1,18 @@
-import { Component, computed, input, output } from '@angular/core'
+import { Component, computed, ElementRef, input, output, viewChild } from '@angular/core'
 export interface MultiOption {
     value: string
     label: string
 }
 @Component({
-    host: { class: 'block min-w-0' },
+    host: {
+        class: 'block min-w-0',
+        '(document:click)': 'closeOnOutsideClick($event)',
+    },
     selector: 'app-multi-select',
     templateUrl: './multi-select.html',
 })
 export class MultiSelect {
+    private readonly menu = viewChild.required<ElementRef<HTMLDetailsElement>>('menu')
     readonly label = input.required<string>()
     readonly options = input.required<readonly MultiOption[]>()
     readonly selected = input.required<string[]>()
@@ -25,6 +29,12 @@ export class MultiSelect {
               ? this.selected().length + ' seleccionados'
               : 'Sin selección',
     )
+    closeOnOutsideClick(event: MouseEvent) {
+        const menu = this.menu().nativeElement
+        if (menu.open && !event.composedPath().includes(menu)) {
+            menu.open = false
+        }
+    }
     toggle(value: string) {
         this.selectionChange.emit(
             this.selected().includes(value)

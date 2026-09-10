@@ -1,6 +1,18 @@
+export const SUCURSALES = [
+    { value: '1', label: 'Chihuahua Norte', ciudad: 'Chihuahua' },
+    { value: '2', label: 'Chihuahua Sur', ciudad: 'Chihuahua' },
+    { value: '3', label: 'Ciudad Juárez', ciudad: 'Ciudad Juárez' },
+]
+export const REPRESENTANTES = [
+    { value: '1', label: 'Ana Torres', sucursalId: '1' },
+    { value: '2', label: 'Luis Mendoza', sucursalId: '1' },
+    { value: '3', label: 'María García', sucursalId: '2' },
+    { value: '4', label: 'Carlos Molina', sucursalId: '2' },
+    { value: '5', label: 'Sofía Reyes', sucursalId: '3' },
+]
 import { Injectable, signal } from '@angular/core'
 import { Lead, LeadView } from '@features/leads/models/lead'
-import { SUCURSALES, REPRESENTANTES } from './leads.catalogos'
+
 const empresas = [
     'Hotel Mirador',
     'Clínica San Miguel',
@@ -16,7 +28,7 @@ const empresas = [
     'Hospital San Lucas',
 ]
 @Injectable({ providedIn: 'root' })
-export class LeadsMockStore {
+export class ProspectosLeadsDemoStore {
     readonly view = signal<LeadView>('representante')
     readonly representanteActual = '1'
     readonly notice = signal('')

@@ -1,11 +1,20 @@
-import { Component, inject, output, signal } from '@angular/core'
+import { Component, computed, inject, output, signal } from '@angular/core'
 import { Router, RouterLink, RouterLinkActive } from '@angular/router'
+import { AuthStore } from '../../auth/auth.store'
 @Component({
     selector: 'app-sidebar',
     imports: [RouterLink, RouterLinkActive],
     templateUrl: './app-sidebar.html',
 })
 export class AppSidebar {
+    private readonly auth = inject(AuthStore)
+    readonly visibleItems = computed(() =>
+        this.items.filter(
+            (item) =>
+                item.path !== '/leads' ||
+                (this.auth.isFullyAuthenticated() && !this.auth.isCentral()),
+        ),
+    )
     readonly router = inject(Router)
     readonly navigated = output<void>()
     readonly closed = output<void>()

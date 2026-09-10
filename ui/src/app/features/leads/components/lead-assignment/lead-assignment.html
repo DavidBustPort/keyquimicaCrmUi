@@ -2,15 +2,19 @@
     class="lead-action-panel border-t-[1px] [border-top-style:solid] border-t-[var(--border)] mt-[22px] pt-[22px]"
 >
     <h3 class="mx-[0] text-[17px] font-semibold mt-[0] mb-[12px]">
-        {{ mode() === 'sucursal' ? 'Cambiar sucursal' : 'Asignar representante' }}
+        {{ mode() === 'sucursal' ? 'Cambiar sucursal' : 'Asignar RIK' }}
     </h3>
     <p class="muted text-[var(--muted)] text-[13px] leading-[1.6] mb-[20px]">
-        {{
-            mode() === 'sucursal'
-                ? 'Al cambiar la sucursal se retirará el representante actual. Después podrás asignar uno de la nueva sucursal.'
-                : 'Selecciona al representante que dará seguimiento al lead.'
-        }}
+        {{ mode() === 'sucursal' ? 'Selecciona la sucursal que atenderá este lead.' : 'Selecciona al
+        representante que dará seguimiento al lead.' }}
     </p>
+    @if (loading()) {
+    <p role="status" class="text-sm text-blue-700">Cargando opciones…</p>
+    } @if (error()) {
+    <button type="button" class="text-sm text-blue-700 underline" (click)="loadOptions()">
+        Recargar opciones
+    </button>
+    }
     <app-select-field
         [label]="mode() === 'sucursal' ? 'Sucursal' : 'Representante'"
         fieldId="lead-assignment"
@@ -25,15 +29,17 @@
         <button
             type="button"
             class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+            [disabled]="store.saving()"
             (click)="cancelled.emit()"
         >
             Cancelar</button
         ><button
             type="button"
             class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
+            [disabled]="loading() || store.saving()"
             (click)="save()"
         >
-            {{ mode() === 'sucursal' ? 'Guardar sucursal' : 'Asignar representante' }}
+            {{ mode() === 'sucursal' ? 'Guardar sucursal' : 'Asignar RIK' }}
         </button>
     </div>
 </div>

@@ -1,10 +1,10 @@
 import { CurrencyPipe, DecimalPipe } from '@angular/common'
 import { Component, computed, inject } from '@angular/core'
-import { DashboardMockStore } from '@features/dashboard/data-access/dashboard-mock.store'
 import { DashboardFilters } from '@features/dashboard/components/dashboard-filters/dashboard-filters'
 import { DashboardMetrics } from '@features/dashboard/components/dashboard-metrics/dashboard-metrics'
 import { DashboardStatistics } from '@features/dashboard/components/dashboard-statistics/dashboard-statistics'
 import { ProgressGauge } from '@shared/ui/progress-gauge/progress-gauge'
+import { DashboardService } from './dashboard.service'
 
 @Component({
     host: { class: 'block' },
@@ -18,10 +18,11 @@ import { ProgressGauge } from '@shared/ui/progress-gauge/progress-gauge'
         ProgressGauge,
     ],
     templateUrl: './dashboard.html',
+    providers: [DashboardService],
 })
 export class Dashboard {
-    readonly store = inject(DashboardMockStore)
-    readonly data = this.store.data
+    readonly service = inject(DashboardService)
+    readonly data = this.service.data
     readonly sourceTotal = computed(() => this.data().sources.reduce((sum, s) => sum + s.count, 0))
     readonly sourceGradient = computed(() => {
         const total = this.sourceTotal()

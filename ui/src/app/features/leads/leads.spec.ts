@@ -1,183 +1,236 @@
+import { signal } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
+import { provideHttpClient } from '@angular/common/http'
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
 import { provideRouter, Router } from '@angular/router'
-import { By } from '@angular/platform-browser'
-import { App } from '@app/app'
-import { routes } from '@app/app.routes'
+import { AuthStore } from '@app/core/auth/auth.store'
+import { RikFilterStore } from '@app/core/filters/rik-filter.store'
+import { routeAccessGuard } from '@app/core/auth/route-access.guard'
+import { LeadsService } from './data-access/leads.service'
 import { Leads } from './pages/leads/leads'
-import { LeadsMockStore } from './data-access/leads-mock.store'
+import { LeadDto, mapLead } from './models/leads-api.model'
 import { LeadAssignment } from './components/lead-assignment/lead-assignment'
-import { LeadRejection } from './components/lead-rejection/lead-rejection'
-import { ProspectosMockStore } from '@features/prospectos/data-access/prospectos-mock.store'
-import { ProspectoForm } from '@features/prospectos/components/prospecto-form/prospecto-form'
-import { LeadsPicker } from '@features/prospectos/components/leads-picker/leads-picker'
+import { AppSidebar } from '@app/core/layout/app-sidebar/app-sidebar'
+import { LeadDetail } from './components/lead-detail/lead-detail'
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router'
 
-describe('Leads: migration and shared mock workflows', () => {
-    beforeAll(() => {
-        Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
-            configurable: true,
-            value: function (this: HTMLDialogElement) {
-                this.open = true
-            },
+const lead: LeadDto = {
+    id: 42,
+    nombreEmpresa: 'Cliente real',
+    productoInteres: 'Detergente',
+    fechaAlta: '2026-09-10',
+    giroEmpresa: 'Industria',
+    estatusId: 3,
+    estatus: 'Asignado al RIK',
+    comentarios: 'Solicita información',
+    ciudad: 'Chihuahua',
+    correo: 'contacto@example.com',
+    telefono: '6141234567',
+    nombreContacto: 'Contacto',
+    rik: 7,
+    cdId: 10,
+    cd: 'Sucursal 10',
+    fuente: 'Web',
+}
+describe('Leads API migration', () => {
+    const authenticated = signal(true),
+        central = signal(false),
+        manager = signal(false),
+        rik = signal<number | null>(null)
+    let http: HttpTestingController
+    beforeEach(() => {
+        authenticated.set(true)
+        central.set(false)
+        manager.set(false)
+        rik.set(null)
+        TestBed.configureTestingModule({
+            providers: [
+                provideHttpClient(),
+                provideHttpClientTesting(),
+                provideRouter([]),
+                LeadsService,
+                {
+                    provide: AuthStore,
+                    useValue: {
+                        isFullyAuthenticated: authenticated,
+                        isCentral: central,
+                        isManager: manager,
+                        mode: () => (central() ? 'central' : 'sucursal'),
+                        session: () => ({ userId: 1, sucursalId: central() ? null : 10 }),
+                    },
+                },
+                { provide: RikFilterStore, useValue: { selectedRikId: rik } },
+            ],
         })
-        Object.defineProperty(HTMLDialogElement.prototype, 'close', {
-            configurable: true,
-            value: function (this: HTMLDialogElement) {
-                this.open = false
-            },
+        http = TestBed.inject(HttpTestingController)
+    })
+    afterEach(() => http.verify())
+    function list() {
+        return http.expectOne((r) => r.url.endsWith('/crm/leads'))
+    }
+    function start() {
+        const s = TestBed.inject(LeadsService)
+        TestBed.tick()
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 21 } })
+        return s
+    }
+    it('loads server rows and uses server pagination and search', () => {
+        const s = start()
+        expect(s.leads()[0].empresa).toBe('Cliente real')
+        expect(s.total()).toBe(21)
+        s.setPage(2)
+        const page = list()
+        expect(page.request.params.get('page')).toBe('2')
+        page.flush({ succeeded: true, data: { data: [lead], totalRows: 21 } })
+        s.setSearch('A&B')
+        const search = list()
+        expect(search.request.params.get('filter')).toBe('A&B')
+        expect(search.request.params.get('page')).toBe('1')
+        search.flush({ succeeded: true, data: { data: [], totalRows: 0 } })
+        s.setSize(25)
+        const size = list()
+        expect(size.request.params.get('itemsPerPage')).toBe('25')
+        size.flush({ succeeded: true, data: { data: [], totalRows: 0 } })
+    })
+    it('cancels stale searches and recovers from errors', () => {
+        const s = start()
+        s.setSearch('old')
+        const old = list()
+        s.setSearch('new')
+        expect(old.cancelled).toBe(true)
+        list().flush('Error', { status: 500, statusText: 'Server error' })
+        expect(s.error()).toBeTruthy()
+        expect(s.isLoading()).toBe(false)
+        s.refresh()
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 1 } })
+        expect(s.error()).toBe('')
+        expect(s.leads().length).toBe(1)
+    })
+    it('reloads with global RIK only for managers and resets pagination', () => {
+        manager.set(true)
+        const s = start()
+        s.setPage(2)
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 21 } })
+        rik.set(7)
+        TestBed.tick()
+        const filtered = list()
+        expect(filtered.request.params.get('rikId')).toBe('7')
+        expect(filtered.request.params.get('isManager')).toBe('true')
+        expect(filtered.request.params.get('page')).toBe('1')
+        filtered.flush({ succeeded: true, data: { data: [lead], totalRows: 1 } })
+        manager.set(false)
+        TestBed.tick()
+        const own = list()
+        expect(own.request.params.has('rikId')).toBe(false)
+        own.flush({ succeeded: true, data: { data: [], totalRows: 0 } })
+    })
+    it('blocks central and unauthenticated access without making API calls', () => {
+        central.set(true)
+        const s = TestBed.inject(LeadsService)
+        TestBed.tick()
+        expect(s.allowed()).toBe(false)
+        const sidebar = TestBed.createComponent(AppSidebar)
+        sidebar.detectChanges()
+        expect(sidebar.nativeElement.querySelector('a[href="/leads"]')).toBeNull()
+        const route = { data: { modes: ['sucursal'] } } as unknown as ActivatedRouteSnapshot
+        const check = () =>
+            TestBed.runInInjectionContext(() => routeAccessGuard(route, {} as RouterStateSnapshot))
+        expect(TestBed.inject(Router).serializeUrl(check() as any)).toBe('/no-access')
+        central.set(false)
+        authenticated.set(false)
+        TestBed.tick()
+        expect(check()).not.toBe(true)
+        authenticated.set(true)
+        expect(check()).toBe(true)
+    })
+    it('posts the Vue action payloads and reloads after success', async () => {
+        manager.set(true)
+        const s = start()
+        s.branches.set([{ id: 20, name: 'Otra sucursal' }])
+        s.reps.set([{ id: 7, name: 'RIK' }])
+        let task = s.changeBranch(42, '20')
+        let req = http.expectOne((r) => r.url.endsWith('/42/update-sucursal'))
+        expect(req.request.method).toBe('PUT')
+        expect(req.request.body).toEqual({ leadId: 42, sucursalId: 20 })
+        req.flush({ succeeded: true, data: true })
+        await task
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 1 } })
+        task = s.assign(42, '7')
+        req = http.expectOne((r) => r.url.endsWith('/42/assign-rik'))
+        expect(req.request.body).toEqual({ leadId: 42, rikId: 7 })
+        req.flush({ succeeded: true, data: true })
+        await task
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 1 } })
+        task = s.reject(42, 3, '  Otro motivo  ')
+        req = http.expectOne((r) => r.url.endsWith('/42/reject'))
+        expect(req.request.body).toEqual({ leadId: 42, tipoRechazoId: 3, motivo: 'Otro motivo' })
+        req.flush({ succeeded: true, data: true })
+        await task
+        list().flush({ succeeded: true, data: { data: [], totalRows: 0 } })
+    })
+    it('rejects forbidden actions and invalid reasons; leaves failed changes visible', async () => {
+        const s = start()
+        await expect(s.reject(42, 2, '')).rejects.toThrow('gerente')
+        manager.set(true)
+        TestBed.tick()
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 1 } })
+        await expect(s.reject(42, 3, '  ')).rejects.toThrow('motivo')
+        await expect(s.reject(42, 8, '')).rejects.toThrow('tipo')
+        s.selectedId.set(42)
+        const task = s.reject(42, 2, '')
+        const outcome = expect(task).rejects.toThrow()
+        const req = http.expectOne((r) => r.url.endsWith('/42/reject'))
+        expect(req.request.body.motivo).toBeNull()
+        req.flush({ succeeded: true, data: false })
+        await outcome
+        expect(s.selectedId()).toBe(42)
+        expect(s.saving()).toBe(false)
+    })
+    it('uses real catalogs in the assignment form and awaits saving', async () => {
+        manager.set(true)
+        start()
+        const f = TestBed.createComponent(LeadAssignment)
+        f.componentRef.setInput('lead', mapLead(lead))
+        f.componentRef.setInput('mode', 'representante')
+        f.detectChanges()
+        http.expectOne((r) => r.url.endsWith('/catalogs/riks')).flush({
+            succeeded: true,
+            data: [{ id: 7, name: 'RIK real' }],
         })
-    })
-    afterAll(() => {
-        Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal')
-        Reflect.deleteProperty(HTMLDialogElement.prototype, 'close')
-    })
-    beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }))
-
-    it('scopes representative leads and filters, paginates and clears the manager view', async () => {
-        const fixture = TestBed.createComponent(Leads)
-        await fixture.whenStable()
-        const page = fixture.componentInstance
-        expect(page.visible().length).toBe(8)
-        expect(page.visible().every((l) => l.representanteId === '1')).toBe(true)
-        page.setView('gerente')
-        expect(page.visible().length).toBe(12)
-        page.size.set(5)
-        page.page.set(3)
-        expect(page.rows().length).toBe(2)
-        page.filters.controls.search.setValue('Hotel Mirador')
-        expect(page.currentPage()).toBe(1)
-        expect(page.filtered().map((l) => l.id)).toEqual([101])
-        page.filters.reset()
-        page.filters.controls.estado.setValue('Pendiente')
-        expect(page.filtered().length).toBe(2)
-        page.filters.controls.sucursal.setValue('3')
-        expect(page.filtered().map((l) => l.id)).toEqual([110])
-        page.filters.controls.search.setValue('no existe')
-        await fixture.whenStable()
-        expect(fixture.nativeElement.textContent).toContain('No hay leads para mostrar')
-        page.setView('representante')
-        expect(page.filters.getRawValue()).toEqual({ search: '', estado: '', sucursal: '' })
-        expect(page.visible().length).toBe(8)
-    })
-
-    it('shows contact detail in a modal and hides manager actions from the representative', async () => {
-        const fixture = TestBed.createComponent(Leads)
-        await fixture.whenStable()
-        const element = fixture.nativeElement as HTMLElement
-        element
-            .querySelector<HTMLButtonElement>('[aria-label="Ver detalle de Hotel Mirador"]')!
-            .click()
-        await fixture.whenStable()
-        expect(element.querySelector('dialog')!.open).toBe(true)
-        expect(element.querySelector('dialog')!.textContent).toContain('Sofía Reyes')
-        expect(element.querySelector('dialog')!.textContent).not.toContain('Cambiar sucursal')
-        fixture.componentInstance.setView('gerente')
-        fixture.componentInstance.selectedId.set(101)
-        await fixture.whenStable()
-        expect(element.querySelector('dialog')!.textContent).toContain('Cambiar sucursal')
-        element.querySelector<HTMLButtonElement>('[aria-label="Cerrar modal"]')!.click()
-        await fixture.whenStable()
-        expect(element.querySelector('dialog')!.open).toBe(false)
-    })
-
-    it('validates branch assignment and clears the previous representative when transferring a lead', async () => {
-        const store = TestBed.inject(LeadsMockStore)
-        store.view.set('gerente')
-        const fixture = TestBed.createComponent(LeadAssignment)
-        fixture.componentRef.setInput('lead', store.get(101))
-        fixture.componentRef.setInput('mode', 'sucursal')
-        await fixture.whenStable()
-        const editor = fixture.componentInstance
-        editor.selection.setValue('')
-        editor.save()
-        expect(editor.error()).toBeTruthy()
-        expect(store.get(101).sucursalId).toBe('1')
-        editor.selection.setValue('2')
-        editor.save()
-        expect(store.get(101)).toMatchObject({
-            sucursalId: '2',
-            representanteId: '',
-            estado: 'Pendiente',
+        await new Promise((resolve) => setTimeout(resolve, 0))
+        await f.whenStable()
+        expect(f.componentInstance.options()[0].label).toContain('RIK real')
+        f.componentInstance.selection.setValue('7')
+        const emitted = vi.spyOn(f.componentInstance.saved, 'emit')
+        const pending = f.componentInstance.save()
+        expect(emitted).not.toHaveBeenCalled()
+        http.expectOne((r) => r.url.endsWith('/42/assign-rik')).flush({
+            succeeded: true,
+            data: true,
         })
-        expect(() => store.assign(101, '1')).toThrow(/sucursal/)
-        fixture.componentRef.setInput('lead', store.get(101))
-        fixture.componentRef.setInput('mode', 'representante')
-        await fixture.whenStable()
-        expect(editor.options().map((r) => r.value)).toEqual(['3', '4'])
-        editor.selection.setValue('3')
-        editor.save()
-        expect(store.get(101)).toMatchObject({ representanteId: '3', estado: 'Disponible' })
-        expect(store.canDevelop(101)).toBe(false)
+        await pending
+        expect(emitted).toHaveBeenCalled()
+        list().flush({ succeeded: true, data: { data: [], totalRows: 0 } })
     })
-
-    it('requires a rejection reason and synchronizes rejected leads with the prospect suggestions', async () => {
-        const store = TestBed.inject(LeadsMockStore)
-        store.view.set('gerente')
-        const picker = TestBed.createComponent(LeadsPicker)
-        await picker.whenStable()
-        expect(picker.componentInstance.filtered().length).toBe(6)
-        const fixture = TestBed.createComponent(LeadRejection)
-        fixture.componentRef.setInput('leadId', 101)
-        await fixture.whenStable()
-        const rejection = fixture.componentInstance
-        rejection.save()
-        expect(rejection.error()).toContain('Selecciona')
-        expect(store.get(101).estado).toBe('Disponible')
-        rejection.reason.setValue('otro')
-        rejection.explanation.setValue('  ')
-        rejection.save()
-        expect(rejection.error()).toContain('Especifica')
-        rejection.explanation.setValue('Registro duplicado')
-        rejection.save()
-        expect(store.get(101)).toMatchObject({
-            estado: 'Rechazado',
-            motivo: 'Registro duplicado',
-            rechazadoPor: 'gerente',
-        })
-        expect(picker.componentInstance.filtered().length).toBe(5)
-        expect(TestBed.inject(ProspectosMockStore).leads()).toBe(store.leads())
-        expect(() => store.assign(101, '1')).toThrow()
-        expect(() => store.changeBranch(101, '2')).toThrow()
+    it('renders API data and hides manager actions for representatives', async () => {
+        const f = TestBed.createComponent(Leads)
+        f.detectChanges()
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 1 } })
+        await f.whenStable()
+        expect(f.nativeElement.textContent).toContain('Cliente real')
+        expect(f.nativeElement.textContent).not.toContain('demostración')
+        const detail = TestBed.createComponent(LeadDetail)
+        detail.componentRef.setInput('lead', mapLead(lead))
+        detail.detectChanges()
+        list().flush({ succeeded: true, data: { data: [lead], totalRows: 1 } })
+        await detail.whenStable()
+        expect(detail.nativeElement.textContent).not.toContain('Asignar RIK')
+        expect(detail.nativeElement.textContent).toContain('Sucursal 10')
     })
-
-    it('rejects manager mutations in representative mode and prevents editing finalized leads', () => {
-        const store = TestBed.inject(LeadsMockStore)
-        expect(() => store.assign(101, '2')).toThrow(/gerente/)
-        expect(() => store.changeBranch(101, '2')).toThrow(/gerente/)
-        expect(() => store.reject(101, 'Otro')).toThrow(/gerente/)
-        store.view.set('gerente')
-        expect(() => store.assign(108, '2')).toThrow(/desarrollado/)
-        expect(() => store.reject(108, 'Sin interés')).toThrow(/desarrollado/)
-        store.assign(107, '1')
-        expect(store.get(107).estado).toBe('Disponible')
-        expect(store.canDevelop(107)).toBe(true)
-    })
-
-    it('prefills a prospect from the lead link and marks it developed only after saving', async () => {
-        const fixture = TestBed.createComponent(App)
-        const router = TestBed.inject(Router)
-        await router.navigateByUrl('/prospectos/add?leadId=101')
-        await fixture.whenStable()
-        const form = fixture.debugElement.query(By.directive(ProspectoForm))
-            .componentInstance as ProspectoForm
-        expect(form.form.controls.razonSocial.value).toBe('Hotel Mirador')
-        expect(form.selectedLead()?.id).toBe(101)
-        const store = TestBed.inject(LeadsMockStore)
-        expect(store.get(101).estado).toBe('Disponible')
-        form.form.patchValue({
-            uenId: '1',
-            segmentoId: '11',
-            tipoClienteId: '1',
-            territorioId: '1',
-            vpo: 5000,
-            observaciones: 'Visita de diagnóstico',
+    it('keeps status labels and distinguishes deleted leads', () => {
+        expect(mapLead({ ...lead, estatusId: 6, estatus: 'Eliminado' })).toMatchObject({
+            estado: 'Eliminado',
+            estatus: 'Eliminado',
         })
-        form.save()
-        await fixture.whenStable()
-        expect(store.get(101).estado).toBe('Desarrollado')
-        expect(TestBed.inject(ProspectosMockStore).prospectos()[0]).toMatchObject({
-            leadId: 101,
-            fuente: 'LD',
-        })
-        expect(store.canDevelop(101)).toBe(false)
     })
 })

@@ -5,7 +5,10 @@ export const dashboardRoutes: Routes = [
         path: '',
         pathMatch: 'full',
         loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard),
-        data: { breadcrumb: 'Inicio' },
+        data: {
+            breadcrumb: 'Inicio',
+            showFilterByRik: true,
+        },
         title: 'Inicio | CRM V3',
     },
 ]
