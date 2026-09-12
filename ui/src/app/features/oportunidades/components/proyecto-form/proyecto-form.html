@@ -1,128 +1,95 @@
-<section
-    class="panel border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
->
-    <div
-        class="form-section py-[24px] px-[28px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f6] max-[575.01px]:p-[20px]"
-    >
-        <div class="section-heading flex items-center justify-between gap-[16px] mb-[18px]">
-            <h2 class="m-[0] text-[15px] font-[650]">Alta de proyecto</h2>
-            <span class="muted small text-[var(--muted)] text-[12px]"
-                >Una oportunidad por aplicación</span
-            >
-        </div>
-        <div
-            class="form-grid grid grid-cols-2 gap-[20px] max-[575.01px]:grid-cols-1"
-            [formGroup]="form"
-            (change)="dirty.emit(true)"
-        >
-            <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-                >Tipo de venta<select
-                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                    formControlName="tipoVenta"
-                >
-                    <option>Instalada</option>
-                    <option>Esporádica</option>
-                </select></label
-            >
-            <div></div>
-            <app-select-field
-                label="Área"
-                fieldId="project-area"
-                [required]="true"
-                [control]="form.controls.areaId"
-                [options]="areas"
-            /><app-select-field
-                label="Solución"
-                fieldId="project-solution"
-                [required]="true"
-                [control]="form.controls.solucionId"
-                [options]="solutions"
-            />
-        </div>
-    </div>
-    <div
-        class="form-section py-[24px] px-[28px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f6] max-[575.01px]:p-[20px]"
-    >
-        <h2 class="mx-[0] text-[15px] font-[650] mt-[0] mb-[20px]">
-            Aplicaciones y potencial comercial
-        </h2>
-        <p class="muted small text-[var(--muted)] text-[12px]">
-            El VPT se calcula con la dimensión del prospecto. Indica el VPO para cada aplicación que
-            quieras desarrollar.
-        </p>
-        @for (app of apps(); track app.id) {
-            <div
-                class="application-row p-[18px] border-[1px] border-solid border-[var(--border)] grid grid-cols-[2fr_1fr_1fr] items-center gap-[20px] rounded-[8px] mt-[14px] max-[575.01px]:grid-cols-1"
-            >
-                <label
-                    class="checkbox-label flex items-center gap-[8px] text-[12px] cursor-pointer flex-wrap"
-                    ><input
-                        class="accent-[#007fc7] w-[16px] h-[16px]"
-                        type="checkbox"
-                        [formControl]="app.selected"
-                        [attr.disabled]="used(app.id) ? '' : null"
-                        (change)="dirty.emit(true)"
-                    /><strong>{{ app.label }}</strong>
-                    @if (used(app.id)) {
-                        <span
-                            class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap"
-                            >Aplicación usada</span
-                        >
-                    }
-                </label>
-                <div>
-                    <span class="muted small text-[var(--muted)] text-[12px]">VPT</span
-                    ><strong class="table-subline block text-[11px] whitespace-nowrap mt-[5px]">{{
-                        vpt(app.potencial) | currency: 'MXN' : 'symbol-narrow'
-                    }}</strong>
-                </div>
-                <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-                    >VPO (MXN)<input
-                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        [formControl]="app.vpo"
-                        [readOnly]="!app.selected.value || used(app.id)"
-                        (input)="dirty.emit(true)"
-                /></label>
-            </div>
-        } @empty {
-            <div
-                class="alert info py-[14px] px-[18px] border-[1px] border-solid border-[#d8eafb] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#edf6ff] text-[#326a91]"
-            >
-                Selecciona un área y una solución para ver las aplicaciones.
-            </div>
-        }
-    </div>
-    @if (error()) {
-        <p
-            class="alert warning my-[20px] mx-[28px] py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] bg-[#fffaec] text-[#8c6818]"
-            role="alert"
-        >
-            {{ error() }}
-        </p>
-    }
-    <div
-        class="form-footer py-[22px] px-[28px] flex items-center justify-between gap-[16px] bg-[#fcfdff] max-[575.01px]:p-[20px] max-[575.01px]:items-start max-[575.01px]:flex-col"
-    >
-        <span class="muted small text-[var(--muted)] text-[12px]"
-            >Puedes guardar sin productos y agregarlos después.</span
-        >
-        <div class="actions flex items-center gap-[10px] flex-wrap">
-            <button
-                type="button"
-                class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                (click)="save(false)"
-            >
-                Guardar proyecto(s)</button
-            ><button
-                type="button"
-                class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                (click)="save(true)"
-            >
-                Guardar y agregar productos →
-            </button>
-        </div>
-    </div>
+<section class="rounded-xl border border-slate-200 bg-white p-6">
+	<h2 class="mb-5 text-lg font-semibold">Registrar proyectos por aplicación</h2>
+	@if (error()) {
+		<p
+			role="alert"
+			class="mb-4 text-red-700"
+		>
+			{{ error() }}
+		</p>
+	}
+	<div class="grid gap-5 sm:grid-cols-3">
+		<label class="field"
+			>Tipo de venta<select
+				[(ngModel)]="tipoVenta"
+				(ngModelChange)="dirty.emit(true)"
+				[disabled]="saving()"
+			>
+				<option [ngValue]="1">Instalada</option>
+				<option [ngValue]="2">Esporádica</option>
+			</select></label
+		><label class="field"
+			>Área<select
+				[(ngModel)]="area"
+				(ngModelChange)="changeArea()"
+				[disabled]="saving()"
+			>
+				<option [ngValue]="0">Selecciona un área</option>
+				@for (a of areas(); track a.id) {
+					<option [ngValue]="a.id">{{ a.name }}</option>
+				}
+			</select></label
+		><label class="field"
+			>Solución<select
+				[(ngModel)]="solution"
+				(ngModelChange)="changeSolution()"
+				[disabled]="saving()"
+			>
+				<option [ngValue]="0">Selecciona una solución</option>
+				@for (s of solutions(); track s.id) {
+					<option [ngValue]="s.id">{{ s.name }}</option>
+				}
+			</select></label
+		>
+	</div>
+	@if (loading()) {
+		<p
+			role="status"
+			class="mt-4"
+		>
+			Cargando catálogo…
+		</p>
+	}
+	<div class="mt-5 space-y-3">
+		@for (a of apps(); track a.id) {
+			<div class="flex flex-wrap items-center justify-between gap-5 rounded-xl border border-slate-200 bg-slate-50 p-5">
+				<label
+					><input
+						type="checkbox"
+						[(ngModel)]="a.selected"
+						[disabled]="!a.activo || saving()"
+						(ngModelChange)="dirty.emit(true)"
+					/>
+					{{ a.name }}</label
+				><span>VPT: {{ vpt(a) | currency: 'MXN' : 'symbol-narrow' }}</span>
+				@if (a.activo) {
+					<label class="field"
+						>VPO<input
+							type="number"
+							min="0.01"
+							[(ngModel)]="a.vpo"
+							[disabled]="saving()"
+							(ngModelChange)="dirty.emit(true)"
+					/></label>
+				} @else {
+					<span class="text-slate-500">Ya tiene un proyecto activo</span>
+				}
+			</div>
+		}
+	</div>
+	<div class="mt-6 flex flex-wrap gap-3 border-t border-slate-200 pt-5">
+		<button
+			class="action-button action-primary"
+			[disabled]="saving() || loading()"
+			(click)="save(false)"
+		>
+			Guardar proyectos</button
+		><button
+			class="action-button action-secondary"
+			[disabled]="saving() || loading()"
+			(click)="save(true)"
+		>
+			Guardar y agregar productos
+		</button>
+	</div>
 </section>

@@ -10,7 +10,7 @@
             [value]="size()"
             (change)="sizeChange.emit(+pageSize.value)"
         >
-            @for (count of [5, 10, 20, 50]; track count) {
+            @for (count of sizes(); track count) {
                 <option [value]="count">{{ count }}</option>
             }
         </select></label

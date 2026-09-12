@@ -7,7 +7,7 @@ export const dashboardRoutes: Routes = [
 		loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard),
 		data: {
 			breadcrumb: 'Inicio',
-			showFilterByRik: false
+			showFilterByRik: true
 		},
 		title: 'Inicio | CRM V3'
 	}

@@ -1,216 +1,233 @@
 /* Selectores compartidos para contenido proyectado y controles reutilizables. */
 @layer components {
-    /* Shared controls and surfaces used by feature pages. */
-    .page-heading h1 {
-        font-size: 26px;
-        font-weight: 650;
-        letter-spacing: -0.65px;
-        line-height: 1.3;
-        margin: 5px 0 7px;
-    }
-    .page-heading p {
-        margin: 0;
-    }
-    .section-heading h2,
-    .form-section h2,
-    .table-heading h2 {
-        font-size: 15px;
-        font-weight: 650;
-        margin: 0;
-    }
-    .section-heading h3 {
-        font-weight: 600;
-        font-size: 17px;
-        margin: 4px 0;
-    }
-    .field label {
-        line-height: 1.4;
-    }
-    .field input,
-    .field select,
-    .field textarea {
-        width: 100%;
-        border: 1px solid #dce3eb;
-        background: white;
-        color: var(--text);
-        border-radius: 7px;
-        padding: 10px 12px;
-        min-height: 41px;
-        font: inherit;
-        font-size: 13px;
-        font-weight: 400;
-        outline: none;
-    }
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-        border-color: #00a3ff;
-        box-shadow: 0 0 0 3px #00a3ff15;
-    }
-    .field textarea {
-        resize: vertical;
-    }
-    .field [aria-invalid='true'] {
-        border-color: #bf3b48;
-    }
-    .field input::placeholder,
-    .field textarea::placeholder {
-        color: #99a5b4;
-    }
-    .currency-control input {
-        border: 0;
-        padding-inline: 0;
-    }
-    .currency-control span {
-        color: var(--muted);
-        font-size: 12px;
-    }
-    .form-section > h2 {
-        margin-bottom: 20px;
-    }
-    .lead-banner strong {
-        color: #286083;
-        font-weight: 600;
-    }
-    .lead-banner p {
-        font-size: 12px;
-        color: #658199;
-        margin: 5px 0 0;
-    }
-    .panel > .alert {
-        margin: 20px 28px;
-    }
-    .stat-card > span {
-        color: var(--muted);
-        font-size: 12px;
-    }
-    .stat-card strong {
-        display: block;
-        font-size: 26px;
-        font-weight: 600;
-        letter-spacing: -0.5px;
-        margin-top: 8px;
-    }
-    .stat-card small {
-        font-size: 15px;
-        color: #9aa7b6;
-        font-weight: 400;
-    }
-    .checkbox-label input {
-        accent-color: #007fc7;
-        width: 16px;
-        height: 16px;
-    }
-    .table-heading .badge {
-        margin-left: 8px;
-    }
-    tbody tr:hover {
-        background: #fbfdff;
-    }
-    .status:before {
-        content: '';
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: currentColor;
-    }
-    .pagination label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .pagination select {
-        padding: 6px;
-        border: 1px solid var(--border);
-        border-radius: 5px;
-        background: white;
-    }
-    .pagination .btn {
-        min-height: 30px;
-        padding: 4px 10px;
-    }
-    .empty-state > span {
-        font-size: 36px;
-        color: #8babc0;
-    }
-    .empty-state h3 {
-        font-size: 17px;
-        font-weight: 600;
-        color: var(--text);
-        margin: 10px 0;
-    }
-    .empty-state p {
-        font-size: 13px;
-    }
-    .detail-grid dt {
-        color: var(--muted);
-        font-size: 12px;
-        margin-bottom: 6px;
-    }
-    .detail-grid dd {
-        margin: 0;
-        font-size: 13px;
-        overflow-wrap: anywhere;
-    }
-    .lead-card .section-heading {
-        margin-bottom: 14px;
-    }
-    .lead-card p {
-        font-size: 12px;
-        margin-top: 6px;
-    }
-    .lead-card .eyebrow {
-        font-size: 10px;
-        letter-spacing: 0.2px;
-    }
-    @media (max-width: 1100px) {
-        .stat-card strong {
-            font-size: 23px;
-        }
-    }
-    @media (max-width: 575px) {
-        .stat-card strong {
-            font-size: 18px;
-        }
-        .stat-card > span {
-            font-size: 10px;
-        }
-        .page-heading h1 {
-            font-size: 23px;
-        }
-        .lead-card .section-heading {
-            align-items: flex-start;
-        }
-        .lead-card .btn {
-            padding: 8px 10px;
-        }
-    }
+	.action-button {
+		@apply inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007fc7] disabled:cursor-not-allowed disabled:opacity-50;
+	}
+	.action-primary {
+		@apply border-[#007fc7] bg-[#007fc7] text-white shadow-sm hover:bg-[#006dae];
+	}
+	.action-secondary {
+		@apply border-[#cbddeb] bg-[#f5f9ff] text-[#165da9] hover:border-[#91bde3] hover:bg-[#e8f2ff];
+	}
+	.field {
+		@apply flex flex-col gap-2 text-sm;
+	}
+	.field input:not([type='checkbox']):not([type='radio']),
+	.field select {
+		height: 44px;
+	}
+
+	/* Shared controls and surfaces used by feature pages. */
+	.page-heading h1 {
+		font-size: 26px;
+		font-weight: 650;
+		letter-spacing: -0.65px;
+		line-height: 1.3;
+		margin: 5px 0 7px;
+	}
+	.page-heading p {
+		margin: 0;
+	}
+	.section-heading h2,
+	.form-section h2,
+	.table-heading h2 {
+		font-size: 15px;
+		font-weight: 650;
+		margin: 0;
+	}
+	.section-heading h3 {
+		font-weight: 600;
+		font-size: 17px;
+		margin: 4px 0;
+	}
+	.field label {
+		line-height: 1.4;
+	}
+	.field input,
+	.field select,
+	.field textarea {
+		width: 100%;
+		border: 1px solid #dce3eb;
+		background: white;
+		color: var(--text);
+		border-radius: 7px;
+		padding: 10px 12px;
+		min-height: 41px;
+		font: inherit;
+		font-size: 13px;
+		font-weight: 400;
+		outline: none;
+	}
+	.field input:focus,
+	.field select:focus,
+	.field textarea:focus {
+		border-color: #00a3ff;
+		box-shadow: 0 0 0 3px #00a3ff15;
+	}
+	.field textarea {
+		resize: vertical;
+	}
+	.field [aria-invalid='true'] {
+		border-color: #bf3b48;
+	}
+	.field input::placeholder,
+	.field textarea::placeholder {
+		color: #99a5b4;
+	}
+	.currency-control input {
+		border: 0;
+		padding-inline: 0;
+	}
+	.currency-control span {
+		color: var(--muted);
+		font-size: 12px;
+	}
+	.form-section > h2 {
+		margin-bottom: 20px;
+	}
+	.lead-banner strong {
+		color: #286083;
+		font-weight: 600;
+	}
+	.lead-banner p {
+		font-size: 12px;
+		color: #658199;
+		margin: 5px 0 0;
+	}
+	.panel > .alert {
+		margin: 20px 28px;
+	}
+	.stat-card > span {
+		color: var(--muted);
+		font-size: 12px;
+	}
+	.stat-card strong {
+		display: block;
+		font-size: 26px;
+		font-weight: 600;
+		letter-spacing: -0.5px;
+		margin-top: 8px;
+	}
+	.stat-card small {
+		font-size: 15px;
+		color: #9aa7b6;
+		font-weight: 400;
+	}
+	.checkbox-label input {
+		accent-color: #007fc7;
+		width: 16px;
+		height: 16px;
+	}
+	.table-heading .badge {
+		margin-left: 8px;
+	}
+	tbody tr:hover {
+		background: #fbfdff;
+	}
+	.status:before {
+		content: '';
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: currentColor;
+	}
+	.pagination label {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.pagination select {
+		padding: 6px;
+		border: 1px solid var(--border);
+		border-radius: 5px;
+		background: white;
+	}
+	.pagination .btn {
+		min-height: 30px;
+		padding: 4px 10px;
+	}
+	.empty-state > span {
+		font-size: 36px;
+		color: #8babc0;
+	}
+	.empty-state h3 {
+		font-size: 17px;
+		font-weight: 600;
+		color: var(--text);
+		margin: 10px 0;
+	}
+	.empty-state p {
+		font-size: 13px;
+	}
+	.detail-grid dt {
+		color: var(--muted);
+		font-size: 12px;
+		margin-bottom: 6px;
+	}
+	.detail-grid dd {
+		margin: 0;
+		font-size: 13px;
+		overflow-wrap: anywhere;
+	}
+	.lead-card .section-heading {
+		margin-bottom: 14px;
+	}
+	.lead-card p {
+		font-size: 12px;
+		margin-top: 6px;
+	}
+	.lead-card .eyebrow {
+		font-size: 10px;
+		letter-spacing: 0.2px;
+	}
+	@media (max-width: 1100px) {
+		.stat-card strong {
+			font-size: 23px;
+		}
+	}
+	@media (max-width: 575px) {
+		.stat-card strong {
+			font-size: 18px;
+		}
+		.stat-card > span {
+			font-size: 10px;
+		}
+		.page-heading h1 {
+			font-size: 23px;
+		}
+		.lead-card .section-heading {
+			align-items: flex-start;
+		}
+		.lead-card .btn {
+			padding: 8px 10px;
+		}
+	}
 }
 /* Estados dinámicos que prevalecen sobre la presentación inicial. */
 @layer states {
-    .alert.success {
-        background: #eaf8f1;
-        color: #267454;
-        border: 1px solid #ceecdf;
-    }
-    .alert.warning {
-        background: #fffaec;
-        color: #8c6818;
-        border: 1px solid #f3e6bd;
-    }
-    .alert.info {
-        background: #edf6ff;
-        color: #326a91;
-        border: 1px solid #d8eafb;
-    }
-    .complete {
-        color: #338966;
-    }
-    .incomplete {
-        color: #bf8a2d;
-    }
-    .lead-source {
-        background: #ecf4ff;
-        color: #4889c8;
-    }
+	.alert.success {
+		background: #eaf8f1;
+		color: #267454;
+		border: 1px solid #ceecdf;
+	}
+	.alert.warning {
+		background: #fffaec;
+		color: #8c6818;
+		border: 1px solid #f3e6bd;
+	}
+	.alert.info {
+		background: #edf6ff;
+		color: #326a91;
+		border: 1px solid #d8eafb;
+	}
+	.complete {
+		color: #338966;
+	}
+	.incomplete {
+		color: #bf8a2d;
+	}
+	.lead-source {
+		background: #ecf4ff;
+		color: #4889c8;
+	}
 }

@@ -1,6 +1,7 @@
+import { latestSearch } from '@shared/rxjs/latest-search'
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { catchError, firstValueFrom, of, Subject, switchMap } from 'rxjs'
+import { catchError, firstValueFrom, of, Subject } from 'rxjs'
 import { AuthStore } from '@core/auth/auth.store'
 import { UserRole } from '@core/auth/auth.model'
 import { RikFilterStore } from '@core/filters/rik-filter.store'
@@ -25,6 +26,7 @@ export class ProspectosService {
 	readonly loading = signal(false)
 	readonly error = signal('')
 	readonly exporting = signal(false)
+	readonly managerDetails = signal(false)
 	readonly filters = signal({ search: '', period: '', fuente: '', registro: '', estatus: '', etapa: '', etapaLead: '' })
 	private previousScope = ''
 	private readonly requests = new Subject<ProspectosQuery | null>()
@@ -38,9 +40,9 @@ export class ProspectosService {
 			filterNombreProspecto: f.search.trim() || null,
 			filterRegistro: f.registro ? Number(f.registro) : null,
 			filterFuente: f.fuente || null,
-			filterEtapaLead: f.etapaLead || null,
+			filterEtapaLead: this.auth.isManager() && this.managerDetails() ? f.etapaLead || null : null,
 			filterRik: this.auth.isManager() ? this.rikFilter.selectedRikId() : null,
-			filterEtapaOportunidad: f.etapa ? Number(f.etapa) : null,
+			filterEtapaOportunidad: this.auth.isManager() && this.managerDetails() && f.etapa ? Number(f.etapa) : null,
 			filterEstatus: f.estatus ? Number(f.estatus) : -1,
 			isGte: this.auth.isManager()
 		}
@@ -48,7 +50,10 @@ export class ProspectosService {
 	constructor() {
 		this.requests
 			.pipe(
-				switchMap((q) => (q ? this.api.list(q).pipe(catchError((error) => of({ error }))) : of(null))),
+				latestSearch(
+					(q) => (q ? (q.filterNombreProspecto ?? '') : null),
+					(q) => (q ? this.api.list(q).pipe(catchError((error) => of({ error }))) : of(null))
+				),
 				takeUntilDestroyed()
 			)
 			.subscribe((result) => {
@@ -94,6 +99,13 @@ export class ProspectosService {
 	filter(key: keyof ReturnType<typeof this.filters>, value: string) {
 		this.page.set(1)
 		this.filters.update((f) => ({ ...f, [key]: value }))
+	}
+	setManagerDetails(enabled: boolean) {
+		this.managerDetails.set(this.auth.isManager() && enabled)
+		if (!this.managerDetails()) {
+			this.page.set(1)
+			this.filters.update((f) => ({ ...f, etapa: '', etapaLead: '' }))
+		}
 	}
 	clear() {
 		this.page.set(1)

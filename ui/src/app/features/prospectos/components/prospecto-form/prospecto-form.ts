@@ -1,8 +1,7 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core'
-import { CurrencyPipe } from '@angular/common'
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { Router, RouterLink } from '@angular/router'
-import { firstValueFrom } from 'rxjs'
+import { firstValueFrom, forkJoin } from 'rxjs'
 import { AuthStore } from '@core/auth/auth.store'
 import { UserRole } from '@core/auth/auth.model'
 import { ProspectosApiService } from '@features/prospectos/data-access/prospectos-api.service'
@@ -13,7 +12,7 @@ import { FormField } from '@shared/ui/form-field/form-field'
 import { Modal } from '@shared/ui/modal/modal'
 import { LeadsPicker } from '@features/prospectos/components/leads-picker/leads-picker'
 const requiredText = Validators.pattern(/\S/)
-@Component({ selector: 'app-prospecto-form', imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, FormField, Modal, LeadsPicker], templateUrl: './prospecto-form.html' })
+@Component({ selector: 'app-prospecto-form', imports: [ReactiveFormsModule, RouterLink, FormField, Modal, LeadsPicker], templateUrl: './prospecto-form.html' })
 export class ProspectoForm {
 	readonly prospectoId = input<number>()
 	readonly leadId = input<number>()
@@ -28,6 +27,8 @@ export class ProspectoForm {
 	readonly modalOpen = signal(false)
 	readonly uens = signal<CatalogOption[]>([])
 	readonly segments = signal<CatalogOption[]>([])
+	readonly customerTypes = signal<CatalogOption[]>([])
+	readonly territories = signal<CatalogOption[]>([])
 	readonly loading = signal(false)
 	readonly segmentLoading = signal(false)
 	readonly saving = signal(false)
@@ -63,6 +64,8 @@ export class ProspectoForm {
 				this.ready.set(false)
 				this.uens.set([])
 				this.segments.set([])
+				this.customerTypes.set([])
+				this.territories.set([])
 				this.form.reset()
 				this.loading.set(false)
 				this.error.set('')
@@ -85,9 +88,18 @@ export class ProspectoForm {
 		this.error.set('')
 		try {
 			if (id !== undefined && (!Number.isInteger(id) || id < 1)) throw new Error('El ID de prospecto no es válido.')
-			const uens = await firstValueFrom(this.api.uens())
+			const { uens, customerTypes, territories } = await firstValueFrom(
+				forkJoin({
+					uens: this.api.uens(),
+					customerTypes: this.api.customerTypes(),
+					territories: this.api.territories()
+				})
+			)
 			if (generation !== this.generation) return
 			this.uens.set(uens)
+			this.customerTypes.set(customerTypes)
+			this.territories.set(territories)
+			if (id === undefined && territories.length === 1) this.form.controls.territorioId.setValue(territories[0].id)
 			if (id !== undefined) {
 				const p = await firstValueFrom(this.api.detail(id))
 				if (generation !== this.generation) return
@@ -163,8 +175,8 @@ export class ProspectoForm {
 			return
 		}
 		const f = this.form.getRawValue()
-		if (!this.uens().some((u) => u.id === f.uenId) || !this.segments().some((s) => s.id === f.segmentoId)) {
-			this.error.set('Selecciona una UEN y un segmento válidos.')
+		if (!this.uens().some((u) => u.id === f.uenId) || !this.segments().some((s) => s.id === f.segmentoId) || !this.customerTypes().some((t) => t.id === f.tipoClienteId) || !this.territories().some((t) => t.id === f.territorioId)) {
+			this.error.set('Selecciona una UEN, segmento, tipo de cliente y territorio válidos.')
 			return
 		}
 		if (this.requiresContact() && [f.contacto, f.correo, f.telefono, f.observaciones].some((v) => !v.trim())) {

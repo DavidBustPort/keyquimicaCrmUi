@@ -7,19 +7,19 @@
 			class="metric grid gap-2.5 rounded-xl border-t-4 border-r border-b border-l border-solid border-t-(--accent) border-r-[#e6eaf0] border-b-[#e6eaf0] border-l-[#e6eaf0] bg-white px-3 py-4.5"
 			[style.--accent]="card.color"
 		>
-			<span class="text-[13px] font-semibold">{{ card.label }}</span
+			<span class="text-[14px] font-semibold">{{ card.label }}</span
 			><strong class="text-[clamp(16px,1.6vw,24px)] text-(--accent)">{{ card.value | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</strong
-			><small class="text-[10px] text-[#64748b]">MXN · periodo seleccionado</small>
+			><small class="text-[12px] text-[#64748b]">MXN · periodo seleccionado</small>
 		</article>
 	}
 </section>
 <section class="panel goal mb-6 flex items-center gap-7.5 overflow-hidden rounded-xl border border-solid border-(--border) bg-white p-5.5 shadow-[0_3px_16px_#1f3c6004] max-[650.01px]:flex-col max-[650.01px]:items-stretch max-[650.01px]:gap-4.5">
 	<div>
-		<h2 class="m-0 text-[17px]">Meta de cierre</h2>
-		<p class="muted mx-0 mt-2 mb-0 text-[13px] text-(--muted)">{{ data().closed | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} de {{ data().closeGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} MXN</p>
+		<h2 class="m-0 text-[18px]">Meta de cierre</h2>
+		<p class="muted mx-0 mt-2 mb-0 text-[14px] text-(--muted)">{{ data().closed | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} de {{ data().closeGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} MXN</p>
 	</div>
 	<div class="progress-section flex-1">
-		<div class="progress-label mb-2.5 flex justify-between gap-3 text-[12px]">
+		<div class="progress-label mb-2.5 flex justify-between gap-3 text-[13px]">
 			<strong class="text-[20px] text-[#168664]">{{ data().closeGoal ? percent() + '%' : 'Sin presupuesto' }}</strong
 			><span>{{ percent() >= 100 ? '¡Meta lograda!' : 'Cumplimiento del periodo' }}</span>
 		</div>

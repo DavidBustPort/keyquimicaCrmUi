@@ -3,6 +3,19 @@ import { HttpClient, HttpParams } from '@angular/common/http'
 import { map } from 'rxjs'
 import { environment } from '@env/environment'
 import { ApiResponse } from '@app/models/api-response.model'
+import { Lead } from '@features/leads/models/lead'
+export interface LeadSuggestion {
+	id: number
+	empresa: string
+	contacto: string | null
+	correo: string | null
+	telefono: string | null
+	fechaRegistro: string
+	medioComunicacion: string | null
+	segmento: string | null
+	productoInteres: string | null
+	comentarios: string | null
+}
 import { CatalogOption, ProspectoDetail, ProspectoPayload, ProspectosQuery, ProspectosResponse } from '@features/prospectos/models/prospecto'
 @Injectable({ providedIn: 'root' })
 export class ProspectosApiService {
@@ -39,11 +52,43 @@ export class ProspectosApiService {
 	uens() {
 		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/uens').pipe(map((r) => this.unwrap(r)))
 	}
+	customerTypes() {
+		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/tipos-cliente').pipe(map((r) => this.unwrap(r)))
+	}
+	territories() {
+		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/territorios').pipe(map((r) => this.unwrap(r)))
+	}
+	suggestions(query: { page: number; itemsPerPage: number; filter: string }) {
+		return this.http.get<ApiResponse<{ totalRows: number; leads: LeadSuggestion[] }>>(environment.apiUrl + '/crm/leads/suggestions', { params: this.params(query) }).pipe(
+			map((r) => {
+				const result = this.unwrap(r)
+				return {
+					totalRows: result.totalRows,
+					leads: result.leads.map((s): Lead => ({
+						id: s.id,
+						empresa: s.empresa,
+						contacto: s.contacto ?? '',
+						correo: s.correo ?? '',
+						telefono: s.telefono ?? '',
+						fecha: s.fechaRegistro,
+						medio: s.medioComunicacion ?? '',
+						segmento: s.segmento ?? '',
+						producto: s.productoInteres ?? '',
+						comentarios: s.comentarios ?? '',
+						ciudad: '',
+						sucursalId: '',
+						representanteId: '',
+						estado: 'Disponible'
+					}))
+				}
+			})
+		)
+	}
 	segments(uenId: number) {
 		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/segmentos', { params: { uenId } }).pipe(map((r) => this.unwrap(r)))
 	}
-	rejectLead(id: number, reason: string) {
-		return this.http.post<ApiResponse<boolean>>(environment.apiUrl + '/crm/leads/' + id + '/reject', { leadId: id, rejectionReasonId: 3, rejectionComment: reason }).pipe(
+	rejectLead(id: number, reason: string, rejectionReasonId = 3) {
+		return this.http.post<ApiResponse<boolean>>(environment.apiUrl + '/crm/leads/' + id + '/reject', { leadId: id, rejectionReasonId, rejectionComment: reason }).pipe(
 			map((r) => {
 				if (!this.unwrap(r)) throw new Error(r.message || 'No se pudo rechazar el lead.')
 				return true

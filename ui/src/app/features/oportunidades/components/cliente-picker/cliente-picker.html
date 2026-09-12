@@ -1,0 +1,73 @@
+<app-modal
+	[open]="true"
+	title="Desarrollar oportunidad"
+	(closed)="closed.emit()"
+>
+	<p class="mb-5 text-sm text-slate-500">Busca y selecciona al cliente o prospecto para continuar.</p>
+	<form
+		class="mb-5 flex flex-wrap items-end gap-3"
+		(ngSubmit)="find()"
+	>
+		<label class="field min-w-0 flex-1"
+			>Cliente o prospecto<input
+				autofocus
+				type="search"
+				name="cliente"
+				[ngModel]="search"
+				(ngModelChange)="updateSearch($event)"
+				placeholder="Nombre o número de cliente"
+				[disabled]="navigating()"
+		/></label>
+		<button
+			type="submit"
+			class="action-button action-primary"
+			[disabled]="!search.trim() || navigating()"
+		>
+			Buscar
+		</button>
+	</form>
+	@if (error()) {
+		<p
+			role="alert"
+			class="mb-4 rounded-lg bg-red-50 p-4 text-red-800"
+		>
+			{{ error() }}
+		</p>
+	}
+	<div [attr.aria-busy]="loading() || navigating()">
+		@if (loading()) {
+			<app-table-loading label="Buscando clientes…" />
+		} @else if (searched() && !error()) {
+			<div class="max-h-80 overflow-y-auto rounded-xl border border-slate-200">
+				@for (client of rows(); track client.id) {
+					<button
+						type="button"
+						class="flex w-full items-center justify-between gap-4 border-b border-slate-100 p-4 text-left last:border-0 hover:bg-sky-50 disabled:opacity-50"
+						[disabled]="navigating()"
+						(click)="choose(client)"
+					>
+						<span
+							><strong class="block text-sky-800">{{ client.name }}</strong
+							><span class="text-sm text-slate-500">Cliente #{{ client.id }}</span></span
+						><span class="text-sm font-semibold text-sky-700">Seleccionar →</span>
+					</button>
+				} @empty {
+					<p
+						role="status"
+						class="p-8 text-center text-slate-500"
+					>
+						No se encontraron clientes. Prueba con otro nombre o número.
+					</p>
+				}
+			</div>
+		}
+		@if (navigating()) {
+			<p
+				role="status"
+				class="mt-4 text-sm text-sky-700"
+			>
+				Abriendo cliente…
+			</p>
+		}
+	</div>
+</app-modal>

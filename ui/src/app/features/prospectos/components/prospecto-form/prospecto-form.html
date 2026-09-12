@@ -149,38 +149,36 @@
 					</select></app-form-field
 				>
 				<app-form-field
-					label="ID de tipo de cliente"
+					label="Tipo de cliente"
 					forId="tipoClienteId"
 					[required]="true"
 					[error]="fieldError('tipoClienteId')"
-					><input
+					><select
 						id="tipoClienteId"
-						type="number"
-						min="1"
-						step="1"
 						formControlName="tipoClienteId"
-					/>
-					@if (record()?.tipoCliente) {
-						<small>{{ record()?.tipoCliente }}</small>
-					}
-				</app-form-field>
+					>
+						<option [ngValue]="0">Selecciona una opción</option>
+						@for (option of customerTypes(); track option.id) {
+							<option [ngValue]="option.id">{{ option.name }}</option>
+						}
+					</select></app-form-field
+				>
 				<app-form-field
-					label="ID de territorio"
+					label="Territorio"
 					forId="territorioId"
 					[required]="true"
 					[error]="fieldError('territorioId')"
-					><input
+					><select
 						id="territorioId"
-						type="number"
-						min="1"
-						step="1"
 						formControlName="territorioId"
-					/>
-					@if (record()?.territorio) {
-						<small>{{ record()?.territorio }}</small>
-					}
-				</app-form-field>
-				<p class="text-xs text-slate-500 sm:col-span-2">Usa los identificadores vigentes de tu sucursal para tipo de cliente y territorio.</p>
+					>
+						<option [ngValue]="0">Selecciona una opción</option>
+						@for (option of territories(); track option.id) {
+							<option [ngValue]="option.id">{{ option.name }}</option>
+						}
+					</select></app-form-field
+				>
+
 				<app-form-field
 					label="VPO (MXN)"
 					forId="vpo"
@@ -194,6 +192,7 @@
 						formControlName="vpo"
 				/></app-form-field>
 				<app-form-field
+					class="sm:col-span-2"
 					label="Observaciones RIK"
 					forId="observaciones"
 					[required]="requiresContact()"
@@ -207,25 +206,6 @@
 					></textarea>
 				</app-form-field>
 			</fieldset>
-			@if (record(); as p) {
-				<section class="mx-6 mb-6 rounded-xl bg-slate-50 p-5">
-					<h2 class="font-semibold">Potencial registrado · solo consulta</h2>
-					<dl class="mt-4 grid gap-4 sm:grid-cols-3">
-						<div>
-							<dt class="text-xs text-slate-500">{{ p.segmentoDimension || 'Dimensión' }}</dt>
-							<dd>{{ p.cantidadDimension }}</dd>
-						</div>
-						<div>
-							<dt class="text-xs text-slate-500">Valor por unidad</dt>
-							<dd>{{ p.segmentoValorDimension | currency: 'MXN' : 'symbol-narrow' }}</dd>
-						</div>
-						<div>
-							<dt class="text-xs text-slate-500">VPT registrado</dt>
-							<dd>{{ p.cantidadDimension * (p.segmentoValorDimension || 0) | currency: 'MXN' : 'symbol-narrow' }}</dd>
-						</div>
-					</dl>
-				</section>
-			}
 			<div class="flex justify-end gap-3 border-t border-slate-100 p-5">
 				<a
 					class="rounded-lg border border-slate-200 px-4 py-3"

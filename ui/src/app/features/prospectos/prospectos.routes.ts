@@ -2,7 +2,7 @@ import { Routes } from '@angular/router'
 export const prospectosRoutes: Routes = [
 	{
 		path: 'prospectos',
-		data: { breadcrumb: 'Prospectos' },
+		data: { breadcrumb: 'Prospectos', modes: ['sucursal'] },
 		children: [
 			{
 				path: '',

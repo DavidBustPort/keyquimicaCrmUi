@@ -1,108 +1,146 @@
+import { signal } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
+import { provideHttpClient } from '@angular/common/http'
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
+import { AuthStore } from '@core/auth/auth.store'
+import { RikFilterStore } from '@core/filters/rik-filter.store'
+import { environment } from '@env/environment'
 import { GestionProyectos } from './pages/gestion-proyectos/gestion-proyectos'
-import { defaults, filterRows, mockRows } from './data-access/reportes-mock'
-import { buildReportWorkbook } from './data-access/report-export'
-describe('Reportes migrated from crm-ui', () => {
-    beforeEach(() => TestBed.configureTestingModule({}))
-    it('applies every additional field to the exported dataset', () => {
-        const rows = mockRows()
-        const sample = filterRows(rows, defaults())[0]
-        for (const key of [
-            'clientType',
-            'stage',
-            'category',
-            'uen',
-            'segment',
-            'saleType',
-            'supplier',
-        ] as const) {
-            const filtered = filterRows(rows, { ...defaults(), [key]: sample[key] })
-            expect(filtered.length).toBeGreaterThan(0)
-            expect(filtered.every((r) => r[key] === sample[key])).toBe(true)
-            expect(filtered.length).toBeLessThan(filterRows(rows, defaults()).length)
-        }
-    })
-    it('limits local and representative scopes and handles no selected branches', () => {
-        const rows = mockRows()
-        expect(filterRows(rows, { ...defaults(), branches: [] })).toEqual([])
-        expect(
-            filterRows(rows, {
-                ...defaults(),
-                view: 'representante',
-                branches: ['5'],
-                representative: '6',
-            }).every((r) => r.branch === '1' && r.representative === '1'),
-        ).toBe(true)
-        expect(
-            filterRows(rows, { ...defaults(), view: 'gerente' }).every((r) => r.branch === '1'),
-        ).toBe(true)
-    })
-    it('resets dependent selections and restores defaults', () => {
-        const p = TestBed.createComponent(GestionProyectos).componentInstance
-        p.set('uen', '1')
-        p.set('segment', '1')
-        p.set('uen', '2')
-        expect(p.filters().segment).toBe('')
-        expect(p.segments().every((s) => s.uen === '2')).toBe(true)
-        p.set('representative', '1')
-        p.set('group', '4')
-        expect(p.filters().branches).toEqual(['5'])
-        expect(p.filters().representative).toBe('')
-        expect(p.rows().length).toBeGreaterThan(0)
-        p.reset()
-        expect(p.filters()).toEqual(defaults())
-        expect(p.dirty()).toBe(false)
-    })
-    it('blocks invalid periods and empty downloads', () => {
-        const p = TestBed.createComponent(GestionProyectos).componentInstance
-        p.set('start', '9999-12')
-        p.export()
-        expect(p.error()).toContain('periodo válido')
-        p.set('end', '9999-12')
-        p.export()
-        expect(p.error()).toContain('No se encontraron registros')
-        p.reset()
-        expect(p.error()).toBe('')
-    })
-    it('generates valid workbooks with correct sheets, extra fields and numeric totals', () => {
-        const rows = filterRows(mockRows(), defaults())
-        const parse = (mode: 'all' | 'kpi' | 'database') =>
-            new DOMParser().parseFromString(buildReportWorkbook(rows, mode), 'application/xml')
-        expect(parse('all').querySelector('parsererror')).toBeNull()
-        expect(parse('all').getElementsByTagName('Worksheet').length).toBe(2)
-        expect(parse('kpi').getElementsByTagName('Worksheet').length).toBe(1)
-        expect(parse('database').getElementsByTagName('Worksheet').length).toBe(1)
-        const data = parse('database').documentElement.textContent!
-        for (const field of ['Categoría', 'UEN', 'Segmento', 'Tipo de venta', 'Proveedor'])
-            expect(data).toContain(field)
-        expect(parse('database').getElementsByTagName('Row').length).toBe(rows.length + 1)
-        expect(parse('kpi').documentElement.textContent).toContain(
-            String(rows.reduce((sum, r) => sum + r.amount, 0)),
-        )
-    })
-    it('escapes workbook values as text without spreadsheet formulas', () => {
-        const row = { ...mockRows()[0], client: '=SUM(1,2) & <cliente>' }
-        const xml = buildReportWorkbook([row], 'database')
-        const doc = new DOMParser().parseFromString(xml, 'application/xml')
-        expect(doc.querySelector('parsererror')).toBeNull()
-        expect(doc.documentElement.textContent).toContain(row.client)
-        expect(xml).not.toContain('ss:Formula')
-    })
-    it('renders all extra fields and updates the preview', async () => {
-        const f = TestBed.createComponent(GestionProyectos)
-        await f.whenStable()
-        for (const field of [
-            'Tipo de cliente / prospecto',
-            'Etapa de oportunidad',
-            'Categoría de productos',
-            'UEN',
-            'Segmento',
-            'Tipo de venta',
-            'Proveedor de productos',
-        ])
-            expect(f.nativeElement.textContent).toContain(field)
-        f.componentInstance.set('branches', [])
-        await f.whenStable()
-        expect(f.nativeElement.textContent).toContain('No hay registros para esta selección')
-    })
+const base = environment.apiUrl
+describe('Gestión de proyectos API', () => {
+	const central = signal(true),
+		authenticated = signal(true),
+		manager = signal(false),
+		session = signal({ userId: 1, sucursalId: null as number | null }),
+		rik = signal<number | null>(null)
+	let http: HttpTestingController
+	beforeEach(() => {
+		central.set(true)
+		authenticated.set(true)
+		manager.set(false)
+		session.set({ userId: 1, sucursalId: null })
+		rik.set(null)
+		TestBed.configureTestingModule({
+			providers: [
+				provideHttpClient(),
+				provideHttpClientTesting(),
+				{ provide: AuthStore, useValue: { isCentral: central, isFullyAuthenticated: authenticated, isManager: manager, session } },
+				{ provide: RikFilterStore, useValue: { selectedRikId: rik } }
+			]
+		})
+		http = TestBed.inject(HttpTestingController)
+	})
+	afterEach(() => http.verify({ ignoreCancelled: true }))
+	async function setup() {
+		const fixture = TestBed.createComponent(GestionProyectos)
+		fixture.detectChanges()
+		http.expectOne(base + '/catalogs/uens').flush({ succeeded: true, data: [{ id: 8, name: 'Industrial' }] })
+		http.expectOne(base + '/catalogs/tipos-producto').flush({ succeeded: true, data: [{ id: 9, name: 'Químicos' }] })
+		if (central()) http.expectOne(base + '/catalogs/proveedores-productos').flush({ succeeded: true, data: [{ id: 'KEY', name: 'KEY' }] })
+		await Promise.resolve()
+		await Promise.resolve()
+		if (central()) http.expectOne((r) => r.url === base + '/catalogs/sucursales').flush({ succeeded: true, data: [{ id: 22, name: 'Sucursal real' }] })
+		await fixture.whenStable()
+		return fixture
+	}
+	it('renders central fields without mock mode or preview', async () => {
+		const f = await setup()
+		const text = f.nativeElement.textContent
+		expect(text).toContain('Grupo de sucursales')
+		expect(text).toContain('Proveedor de productos')
+		expect(text).toContain('Resumen KPIs')
+		expect(text).not.toContain('Vista previa')
+		expect(text).not.toContain('Vista de prueba')
+		expect(f.componentInstance.filters().branches).toEqual(['22'])
+	})
+	it('hides central fields and scopes the report to the manager header RIK', async () => {
+		central.set(false)
+		manager.set(true)
+		rik.set(475)
+		session.set({ userId: 2, sucursalId: 22 })
+		const f = await setup()
+		const text = f.nativeElement.textContent
+		expect(text).not.toContain('Grupo de sucursales')
+		expect(text).not.toContain('Proveedor de productos')
+		expect(text).not.toContain('Resumen KPIs')
+		f.componentInstance.filters.update((v) => ({ ...v, branches: ['999'], supplier: 'KEY', mode: 'database' }))
+		expect(f.componentInstance.query()).toMatchObject({ DownloadMode: 'all', IsManager: true, RikId: 475, SucursalesId: null, ProveedorProducto: null })
+	})
+	it('uses the exact Vue report contract and handles an empty file', async () => {
+		const f = await setup(),
+			p = f.componentInstance
+		p.set('start', '2026-01')
+		p.set('end', '2026-03')
+		p.set('clientType', 'LD')
+		p.set('stage', '3')
+		p.set('category', '9')
+		p.set('saleType', 'VI')
+		p.set('supplier', 'KEY')
+		p.set('mode', 'kpi')
+		const result = p.export()
+		const r = http.expectOne((r) => r.url === base + '/crm/reports/gestion-proyectos')
+		expect(r.request.responseType).toBe('blob')
+		for (const [key, value] of Object.entries({
+			DownloadMode: 'kpi',
+			StartMonth: '1',
+			StartYear: '2026',
+			EndMonth: '3',
+			EndYear: '2026',
+			IsManager: 'false',
+			SucursalesId: '22',
+			TipoProspecto: 'LD',
+			EtapaOportunidad: '3',
+			Categoria: '9',
+			TipoVenta: 'VI',
+			ProveedorProducto: 'KEY'
+		}))
+			expect(r.request.params.get(key)).toBe(value)
+		expect(r.request.params.has('RikId')).toBe(false)
+		r.flush(new Blob([]))
+		await result
+		expect(p.error()).toContain('No se encontraron registros')
+		expect(p.busy()).toBe(false)
+	})
+	it('clears dependent segments and ignores outdated requests', async () => {
+		const f = await setup(),
+			p = f.componentInstance
+		p.set('uen', '8')
+		const old = http.expectOne((r) => r.url === base + '/catalogs/segmentos')
+		p.set('uen', '9')
+		const fresh = http.expectOne((r) => r.url === base + '/catalogs/segmentos')
+		fresh.flush({ succeeded: true, data: [{ id: 91, name: 'Actual' }] })
+		await Promise.resolve()
+		old.flush({ succeeded: true, data: [{ id: 81, name: 'Anterior' }] })
+		await f.whenStable()
+		expect(p.segments()).toEqual([{ value: '91', label: 'Actual' }])
+		expect(p.filters().segment).toBe('')
+	})
+	it('blocks reversed periods and empty central branch selection', async () => {
+		const f = await setup(),
+			p = f.componentInstance
+		p.set('start', '2099-12')
+		p.set('end', '2099-01')
+		await p.export()
+		expect(p.error()).toContain('periodo válido')
+		p.set('end', '2099-12')
+		p.set('branches', [])
+		await p.export()
+		expect(p.error()).toContain('sucursal')
+		http.expectNone((r) => r.url.includes('/crm/reports'))
+	})
+	it('does not request catalogs without an authenticated session', async () => {
+		authenticated.set(false)
+		const f = TestBed.createComponent(GestionProyectos)
+		await f.whenStable()
+		expect(f.nativeElement.querySelector('form')).toBeNull()
+		http.expectNone((r) => true)
+	})
+	it('reports HTTP failures separately from no data', async () => {
+		const f = await setup()
+		const pending = f.componentInstance.export()
+		http.expectOne((r) => r.url.includes('/crm/reports')).flush(new Blob(['Error']), { status: 500, statusText: 'Server error' })
+		await pending
+		expect(f.componentInstance.error()).toContain('No se pudo descargar')
+		expect(f.componentInstance.error()).not.toContain('No se encontraron')
+	})
 })

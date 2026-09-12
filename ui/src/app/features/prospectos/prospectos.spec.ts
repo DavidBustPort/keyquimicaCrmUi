@@ -12,7 +12,8 @@ import { ProspectosApiService } from './data-access/prospectos-api.service'
 import { ProspectosService, ProspectosNotice } from './data-access/prospectos.service'
 import { ProspectoForm } from './components/prospecto-form/prospecto-form'
 import { LeadsPicker } from './components/leads-picker/leads-picker'
-import { ProspectoPayload, ProspectoDetail, ProspectosQuery } from './models/prospecto'
+import { ProspectosList } from './pages/prospectos-list/prospectos-list'
+import { ProspectoPayload, ProspectoDetail, ProspectosQuery, ProspectoRow } from './models/prospecto'
 const root = environment.apiUrl
 const payload: ProspectoPayload = { razonSocial: 'Empresa API', contacto: null, correo: null, telefono: null, uenId: 8, segmentoId: 81, tipoClienteId: 7, territorioId: 90, vpo: 1000, observaciones: null }
 const detail: ProspectoDetail = {
@@ -52,6 +53,7 @@ const query: ProspectosQuery = {
 	filterEstatus: -1,
 	isGte: false
 }
+afterEach(() => vi.useRealTimers())
 describe('Prospectos API', () => {
 	let http: HttpTestingController
 	const session = signal({ userId: 1, sucursalId: 2, rikId: 475, role: UserRole.Rik }),
@@ -114,12 +116,14 @@ describe('Prospectos API', () => {
 		await rejected
 	})
 	it('cancels obsolete queries and clears records when the session ends', async () => {
+		vi.useFakeTimers()
 		const service = TestBed.inject(ProspectosService)
 		TestBed.tick()
 		const first = http.expectOne((r) => r.url === root + '/crm/prospectos')
 		service.filter('search', 'nuevo')
 		TestBed.tick()
 		expect(first.cancelled).toBe(true)
+		vi.advanceTimersByTime(300)
 		const current = http.expectOne((r) => r.url === root + '/crm/prospectos')
 		current.flush({ succeeded: true, data: { totalRows: 31, prospectos: [] } })
 		expect(service.total()).toBe(31)
@@ -146,6 +150,8 @@ describe('Prospectos API', () => {
 		f.componentRef.setInput('prospectoId', 42)
 		f.detectChanges()
 		http.expectOne(root + '/catalogs/uens').flush({ succeeded: true, data: [{ id: 8, name: 'UEN real' }] })
+		http.expectOne(root + '/catalogs/tipos-cliente').flush({ succeeded: true, data: [{ id: 7, name: 'Tipo real' }] })
+		http.expectOne(root + '/catalogs/territorios').flush({ succeeded: true, data: [{ id: 90, name: 'Territorio real' }] })
 		await Promise.resolve()
 		http.expectOne(root + '/crm/prospectos/42').flush({ succeeded: true, data: detail })
 		await Promise.resolve()
@@ -175,9 +181,12 @@ describe('Prospectos API', () => {
 	it('loads real leads and sends the rejection contract', async () => {
 		const f = TestBed.createComponent(LeadsPicker)
 		f.detectChanges()
-		const r = http.expectOne((r) => r.url === root + '/crm/leads')
-		expect(r.request.params.get('isManager')).toBe('false')
-		r.flush({ succeeded: true, data: { data: [], totalRows: 0 } })
+		const r = http.expectOne((r) => r.url === root + '/crm/leads/suggestions')
+		expect(r.request.params.get('itemsPerPage')).toBe('4')
+		expect(r.request.params.has('rikId')).toBe(false)
+		r.flush({ succeeded: true, data: { leads: [{ id: 101, empresa: 'Sugerencia real', contacto: 'Ana' }], totalRows: 1 } })
+		expect(f.componentInstance.rows()[0].empresa).toBe('Sugerencia real')
+		expect(f.componentInstance.rows()[0].estado).toBe('Disponible')
 		f.componentInstance.rejecting.set(101)
 		f.componentInstance.reason.set('Duplicado')
 		const save = f.componentInstance.reject()
@@ -185,6 +194,28 @@ describe('Prospectos API', () => {
 		expect(rejected.request.body).toEqual({ leadId: 101, rejectionReasonId: 3, rejectionComment: 'Duplicado' })
 		rejected.flush({ succeeded: true, data: true })
 		await save
-		http.expectOne((r) => r.url === root + '/crm/leads').flush({ succeeded: true, data: { data: [], totalRows: 0 } })
+		http.expectOne((r) => r.url === root + '/crm/leads/suggestions').flush({ succeeded: true, data: { leads: [], totalRows: 0 } })
+	})
+	it('opens detail by prospect ID when the customer ID differs', async () => {
+		const f = TestBed.createComponent(ProspectosList)
+		f.detectChanges()
+		http.expectOne((r) => r.url === root + '/crm/prospectos').flush({ succeeded: true, data: { prospectos: [], totalRows: 0 } })
+		const pending = f.componentInstance.openDetail({ id: 42, clienteId: 900 } as ProspectoRow)
+		http.expectOne(root + '/crm/prospectos/42').flush({ succeeded: true, data: detail })
+		await pending
+		expect(f.componentInstance.detail()?.prospectoId).toBe(42)
+	})
+	it('sends the selected rejection type without requiring text for standard reasons', async () => {
+		const f = TestBed.createComponent(LeadsPicker)
+		f.detectChanges()
+		http.expectOne((r) => r.url === root + '/crm/leads/suggestions').flush({ succeeded: true, data: { leads: [], totalRows: 0 } })
+		f.componentInstance.rejecting.set(101)
+		f.componentInstance.reasonType.set(2)
+		const pending = f.componentInstance.reject()
+		const request = http.expectOne(root + '/crm/leads/101/reject')
+		expect(request.request.body).toEqual({ leadId: 101, rejectionReasonId: 2, rejectionComment: '' })
+		request.flush({ succeeded: true, data: true })
+		await pending
+		http.expectOne((r) => r.url === root + '/crm/leads/suggestions').flush({ succeeded: true, data: { leads: [], totalRows: 0 } })
 	})
 })

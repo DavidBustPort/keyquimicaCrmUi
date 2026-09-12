@@ -1,165 +1,192 @@
+import { ClientePicker } from '@features/oportunidades/components/cliente-picker/cliente-picker'
+import { TableLoading } from '@shared/ui/table-loading/table-loading'
+import { DestroyRef } from '@angular/core'
+import { Subject, takeUntil } from 'rxjs'
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core'
 import { CurrencyPipe } from '@angular/common'
-import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { OportunidadesMockStore, montoProyecto } from '@features/oportunidades/data-access/oportunidades-mock.store'
-import { APLICACIONES, catalogName } from '@features/oportunidades/data-access/oportunidades.catalogos'
-import { UENS, SEGMENTOS, TIPOS_CLIENTE, TERRITORIOS } from '@features/oportunidades/data-access/prospectos-mock.store'
-import { Oportunidad } from '@features/oportunidades/models/oportunidad'
-import { ProyectoForm } from '@features/oportunidades/components/proyecto-form/proyecto-form'
-import { ProductosEditor } from '@features/oportunidades/components/productos-editor/productos-editor'
-import { ProyectosTable } from '@features/oportunidades/components/proyectos-table/proyectos-table'
-import { SearchPicker } from '@shared/ui/search-picker/search-picker'
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { firstValueFrom } from 'rxjs'
+import { AuthStore } from '@core/auth/auth.store'
+import { UserRole } from '@core/auth/auth.model'
+import { OportunidadesApiService } from '../../data-access/oportunidades-api.service'
+import { ProspectosApiService } from '@features/prospectos/data-access/prospectos-api.service'
+import { ProspectoDetail } from '@features/prospectos/models/prospecto'
+import { ClienteBusqueda, Proyecto } from '../../models/oportunidad'
+import { ProyectoForm } from '../../components/proyecto-form/proyecto-form'
+import { ProductosEditor } from '../../components/productos-editor/productos-editor'
+import { ProyectosTable } from '../../components/proyectos-table/proyectos-table'
 import { Pagination } from '@shared/ui/pagination/pagination'
 import { Modal } from '@shared/ui/modal/modal'
-type Tab = 'Datos generales' | 'Proyectos' | 'Alta proyecto' | 'Productos'
-@Component({
-	selector: 'app-oportunidades',
-	imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, ProyectoForm, ProductosEditor, ProyectosTable, SearchPicker, Pagination, Modal],
-	templateUrl: './oportunidades.html'
-})
+@Component({ selector: 'app-oportunidades', imports: [ClientePicker, TableLoading, CurrencyPipe, FormsModule, RouterLink, ProyectoForm, ProductosEditor, ProyectosTable, Pagination, Modal], templateUrl: './oportunidades.html' })
 export class Oportunidades {
-	readonly store = inject(OportunidadesMockStore)
+	readonly auth = inject(AuthStore)
+	private readonly searchCancelled = new Subject<void>()
+	private readonly destroyRef = inject(DestroyRef)
+	readonly api = inject(OportunidadesApiService)
+	private readonly prospectos = inject(ProspectosApiService)
 	private readonly router = inject(Router)
 	private readonly params = toSignal(inject(ActivatedRoute).paramMap)
-	readonly clientId = signal<number | null>(null)
-	readonly selectedProjectId = signal<number | null>(null)
-	readonly tab = signal<Tab>('Datos generales')
-	readonly tabs: Tab[] = ['Datos generales', 'Proyectos', 'Alta proyecto', 'Productos']
-	readonly changeClient = signal(false)
-	readonly dimension = new FormControl(0, { nonNullable: true })
-	readonly error = signal('')
-	readonly routeError = signal('')
-	readonly projectDirty = signal(false)
-	readonly productDirty = signal(false)
-	readonly pendingAction = signal<(() => void) | null>(null)
-	private leaveResolve: ((result: boolean) => void) | null = null
+	readonly allowed = computed(() => this.auth.isFullyAuthenticated() && !this.auth.isCentral() && this.auth.session().role === UserRole.Rik)
+	readonly clientPickerOpen = signal(false)
+	readonly client = signal<ProspectoDetail | null>(null)
+	readonly choices = signal<ClienteBusqueda[]>([])
+	readonly projects = signal<Proyecto[]>([])
+	readonly selected = signal<Proyecto | null>(null)
+	readonly total = signal(0)
 	readonly page = signal(1)
 	readonly size = signal(5)
-	readonly client = computed(() => this.store.clientes().find((c) => c.id === this.clientId()) ?? null)
-	readonly choices = computed(() =>
-		this.store.clientes().map((c) => ({
-			id: c.id,
-			label: c.razonSocial,
-			description: '#' + c.id + ' · ' + (c.tipoClienteId === '2' ? 'Cliente' : 'Prospecto') + ' · ' + (c.registro ? 'Registro completo' : 'Completa sus datos antes de continuar')
-		}))
-	)
-	readonly projects = computed(() => this.store.proyectos().filter((p) => p.prospectoId === this.clientId()))
-	readonly projectRows = computed(() => this.projects().slice((this.page() - 1) * this.size(), this.page() * this.size()))
-	readonly selectedProject = computed(() => this.projects().find((p) => p.id === this.selectedProjectId()) ?? null)
-	readonly enabled = computed(() => !!this.client()?.registro && (this.store.dimensiones()[this.clientId() ?? 0] ?? 0) > 0)
-	readonly application = (id: string) => catalogName(APLICACIONES, id)
-	readonly amount = montoProyecto
-	readonly fields = computed(() => {
-		const c = this.client()
-		if (!c) return []
-		return [
-			{ label: 'Contacto', value: c.contacto },
-			{ label: 'Correo', value: c.correo },
-			{ label: 'Teléfono', value: c.telefono },
-			{ label: 'UEN', value: catalogName(UENS, c.uenId) },
-			{ label: 'Segmento', value: catalogName(SEGMENTOS, c.segmentoId) },
-			{ label: 'Tipo de cliente', value: catalogName(TIPOS_CLIENTE, c.tipoClienteId) },
-			{ label: 'Territorio', value: catalogName(TERRITORIOS, c.territorioId) },
-			{ label: 'Observaciones', value: c.observaciones }
-		]
-	})
+	readonly loading = signal(false)
+	readonly saving = signal(false)
+	readonly error = signal('')
+	readonly notice = signal('')
+	readonly dirty = signal(false)
+	readonly tab = signal('Datos generales')
+	readonly enabled = computed(() => this.client()?.registro?.toLowerCase() === 'completo' && (this.client()?.cantidadDimension ?? 0) > 0)
+	readonly tabs = ['Datos generales', 'Proyectos', 'Alta proyecto', 'Productos']
+	search = ''
+	dimension = 0
+	private generation = 0
+	private searchGeneration = 0
+	private projectGeneration = 0
+	readonly leave = signal(false)
+	private resolveLeave: ((value: boolean) => void) | null = null
 	constructor() {
 		effect(() => {
-			const params = this.params()
+			const id = this.params()?.get('prospectoId')
+			const projectId = this.params()?.get('oportunidadId')
+			const allowed = this.allowed()
+			this.auth.session()
 			untracked(() => {
-				const id = params?.get('prospectoId')
-				const projectId = params?.get('oportunidadId')
-				this.clientId.set(id ? Number(id) : null)
-				this.selectedProjectId.set(null)
+				this.generation++
+				this.clientPickerOpen.set(false)
+				this.searchCancelled.next()
+				this.client.set(null)
+				this.projects.set([])
+				this.total.set(0)
+				this.selected.set(null)
+				this.choices.set([])
+				this.dirty.set(false)
 				this.tab.set('Datos generales')
 				this.page.set(1)
 				this.error.set('')
-				this.routeError.set('')
-				this.projectDirty.set(false)
-				this.productDirty.set(false)
-				if (id && !this.client()) {
-					this.routeError.set('El cliente o prospecto solicitado no existe.')
-					return
-				}
-				if (projectId) {
-					const p = this.projects().find((p) => p.id === Number(projectId))
-					if (!p) {
-						this.routeError.set('La oportunidad no existe o no pertenece a este prospecto.')
-						return
-					}
-					this.selectedProjectId.set(p.id)
-					this.tab.set(this.enabled() ? 'Productos' : 'Datos generales')
-				}
-				this.dimension.setValue(this.store.dimensiones()[Number(id)] ?? 0)
+				this.loading.set(false)
+				if (allowed && id) void this.load(Number(id), projectId ? Number(projectId) : undefined)
 			})
 		})
 	}
-	chooseClient(id: number) {
-		this.changeClient.set(false)
-		this.requestAction(() => {
-			this.projectDirty.set(false)
-			this.productDirty.set(false)
-			void this.router.navigate(['/oportunidades-proyectos/oportunidades', id])
-		})
-	}
-	saveDimension() {
+	async load(id = Number(this.params()?.get('prospectoId')), projectId?: number) {
+		if (!this.allowed()) return
+		const version = ++this.generation
+		this.loading.set(true)
 		this.error.set('')
 		try {
-			this.store.saveDimension(this.clientId()!, this.dimension.value)
+			if (!Number.isInteger(id) || id < 1) throw new Error('El identificador no es válido.')
+			const c = await firstValueFrom(this.prospectos.detail(id))
+			if (version !== this.generation) return
+			this.client.set(c)
+			this.dimension = c.cantidadDimension
+			await this.loadProjects(version)
+			if (projectId) {
+				let found = this.projects().find((p) => p.idOportunidad === projectId)
+				if (!found) {
+					const all = await firstValueFrom(this.api.proyectos(c.clienteId, 1, Math.max(this.total(), this.size())))
+					if (version !== this.generation) return
+					found = all.proyectos.find((p) => p.idOportunidad === projectId)
+				}
+				if (!found) throw new Error('La oportunidad no pertenece al cliente seleccionado.')
+				this.selected.set(found)
+				this.tab.set(this.enabled() ? 'Productos' : 'Datos generales')
+			}
 		} catch (e) {
-			this.error.set((e as Error).message)
+			if (version === this.generation) this.error.set(e instanceof Error ? e.message : 'No se pudo cargar el cliente.')
+		} finally {
+			if (version === this.generation) this.loading.set(false)
 		}
 	}
-	goTab(tab: Tab) {
-		if (tab !== 'Datos generales' && !this.enabled()) return
-		if (tab === 'Productos' && !this.selectedProject()) return
-		this.tab.set(tab)
+	async loadProjects(version = this.generation) {
+		const c = this.client()
+		if (!c || !this.allowed()) return
+		const request = ++this.projectGeneration
+		try {
+			const r = await firstValueFrom(this.api.proyectos(c.clienteId, this.page(), this.size()))
+			if (version !== this.generation || request !== this.projectGeneration) return
+			this.projects.set(r.proyectos)
+			this.total.set(r.totalRows)
+		} catch (e) {
+			if (version === this.generation) this.error.set(e instanceof Error ? e.message : 'No se pudieron cargar los proyectos.')
+		}
 	}
-	edit(project: Oportunidad) {
-		const apply = () => {
-			this.productDirty.set(false)
-			this.selectedProjectId.set(project.id)
+	async searchClients() {
+		this.searchCancelled.next()
+		if (!this.allowed()) return
+		const version = ++this.searchGeneration,
+			scope = this.generation
+		this.error.set('')
+		try {
+			const r = await firstValueFrom(this.api.clientes(this.search.trim()).pipe(takeUntil(this.searchCancelled), takeUntilDestroyed(this.destroyRef)), { defaultValue: [] })
+			if (version === this.searchGeneration && scope === this.generation && this.allowed()) this.choices.set(r)
+		} catch (e) {
+			if (scope === this.generation) this.error.set(e instanceof Error ? e.message : 'No se pudo buscar.')
+		}
+	}
+	async choose(c: ClienteBusqueda) {
+		if (await this.confirmNavigation()) await this.router.navigate(['/oportunidades-proyectos/oportunidades', c.prospectoId || c.id])
+	}
+	async saveDimension() {
+		if (this.saving() || !this.allowed() || !this.client()) return
+		this.saving.set(true)
+		this.error.set('')
+		const scope = this.generation
+		try {
+			if (!Number.isFinite(this.dimension) || this.dimension <= 0) throw new Error('La dimensión debe ser mayor que cero.')
+			if (!(await firstValueFrom(this.api.dimension(this.client()!.clienteId, this.dimension)))) throw new Error('No se pudo guardar la dimensión.')
+			if (scope === this.generation) {
+				this.client.update((c) => (c ? { ...c, cantidadDimension: this.dimension } : c))
+				this.notice.set('Dimensión actualizada.')
+			}
+		} catch (e) {
+			if (scope === this.generation) this.error.set(e instanceof Error ? e.message : 'No se pudo guardar.')
+		} finally {
+			this.saving.set(false)
+		}
+	}
+	async changeTab(tab: string) {
+		if (tab !== 'Datos generales' && !this.enabled()) return
+		if (tab === 'Productos' && !this.selected()) return
+		if (await this.confirmNavigation()) this.tab.set(tab)
+	}
+	async edit(p: Proyecto) {
+		if (await this.confirmNavigation()) {
+			this.selected.set(p)
 			this.tab.set('Productos')
 		}
-		if (this.productDirty()) this.pendingAction.set(apply)
-		else apply()
 	}
-	created(event: { projects: Oportunidad[]; continueProducts: boolean }) {
-		this.projectDirty.set(false)
+	async created(event: { ids: number[]; continueProducts: boolean }) {
+		this.dirty.set(false)
 		this.page.set(1)
-		if (event.continueProducts) this.edit(event.projects[0])
-		else this.tab.set('Proyectos')
+		await this.loadProjects()
+		this.notice.set('Proyectos creados.')
+		if (event.continueProducts) {
+			await this.load(Number(this.params()?.get('prospectoId')), event.ids[0])
+		} else this.tab.set('Proyectos')
 	}
-	productsSaved() {
-		this.productDirty.set(false)
+	async productsSaved() {
+		this.dirty.set(false)
+		await this.loadProjects()
 		this.tab.set('Proyectos')
-	}
-	requestAction(action: () => void) {
-		if (this.projectDirty() || this.productDirty()) this.pendingAction.set(action)
-		else action()
+		this.notice.set('Productos actualizados.')
 	}
 	confirmNavigation(): boolean | Promise<boolean> {
-		if (!this.projectDirty() && !this.productDirty()) return true
-		return new Promise((resolve) => {
-			this.leaveResolve = resolve
-			this.pendingAction.set(() => {
-				this.projectDirty.set(false)
-				this.productDirty.set(false)
-				resolve(true)
-				this.leaveResolve = null
-			})
-		})
+		if (!this.dirty()) return true
+		this.leave.set(true)
+		return new Promise((resolve) => (this.resolveLeave = resolve))
 	}
-	confirmDiscard() {
-		const action = this.pendingAction()
-		this.pendingAction.set(null)
-		action?.()
-	}
-	cancelDiscard() {
-		this.pendingAction.set(null)
-		this.leaveResolve?.(false)
-		this.leaveResolve = null
+	discard(value: boolean) {
+		this.leave.set(false)
+		if (value) this.dirty.set(false)
+		this.resolveLeave?.(value)
+		this.resolveLeave = null
 	}
 }

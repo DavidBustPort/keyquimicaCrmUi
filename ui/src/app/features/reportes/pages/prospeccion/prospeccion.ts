@@ -1,6 +1,4 @@
 import { Component } from '@angular/core'
-@Component({
-    selector: 'app-prospeccion',
-    templateUrl: './prospeccion.html',
-})
+import { CommercialReport } from '@features/reportes/components/commercial-report/commercial-report'
+@Component({ selector: 'app-prospeccion', imports: [CommercialReport], templateUrl: './prospeccion.html' })
 export class Prospeccion {}

@@ -7,7 +7,7 @@
 
 <app-dashboard-filters />
 
-@if (service.dashboardResource.isLoading()) {
+@if (service.isLoading()) {
 	<div
 		role="status"
 		class="mb-6 flex items-center gap-3 rounded-xl border border-[#9cc8ee] bg-[#e4f1ff] px-5 py-4 text-[15px] font-semibold text-[#124f87] shadow-sm"
@@ -16,7 +16,7 @@
 			class="size-5 shrink-0 rounded-full border-2 border-[#a4c9e9] border-t-[#1268ae] motion-safe:animate-spin"
 			aria-hidden="true"
 		></span>
-		Cargando indicadores…
+		{{ service.catalogLoading() ? 'Cargando sucursales y RIKs…' : 'Cargando indicadores…' }}
 	</div>
 } @else if (service.dashboardResource.error()) {
 	<div
@@ -38,11 +38,11 @@
 	<div class="dashboard-grid mb-6 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-6 max-[1050.01px]:grid-cols-1">
 		<div class="left-column grid min-w-0 gap-6">
 			<section class="panel mb-5.5 block min-w-0 overflow-hidden rounded-xl border border-solid border-(--border) bg-white p-5.5 shadow-[0_3px_16px_#1f3c6004] max-[550.01px]:p-4">
-				<h2 class="m-0 text-[17px]">Cumplimiento de presupuestos</h2>
-				<p class="muted small text-[12px] text-(--muted)">Avance acumulado del periodo seleccionado</p>
+				<h2 class="m-0 text-[18px]">Cumplimiento de presupuestos</h2>
+				<p class="muted small text-[13px] text-(--muted)">Avance acumulado del periodo seleccionado</p>
 				<div class="budgets grid grid-cols-2 gap-4 max-[550.01px]:gap-2">
 					<article class="text-center">
-						<h3 class="mx-0 my-3 text-[14px]">Embudo</h3>
+						<h3 class="mx-0 my-3 text-[15px]">Embudo</h3>
 						<app-progress-gauge
 							label="Presupuesto de embudo"
 							[value]="data().pipelineBudget ?? data().pipeline"
@@ -51,10 +51,10 @@
 						<strong class="text-[19px] max-[550.01px]:text-[16px]">
 							{{ data().pipelineBudget ?? data().pipeline | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
 						</strong>
-						<p class="muted small text-[12px] text-(--muted)">Meta: {{ data().pipelineGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</p>
+						<p class="muted small text-[13px] text-(--muted)">Meta: {{ data().pipelineGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</p>
 					</article>
 					<article class="border-l [border-left-style:solid] border-l-[#edf0f5] text-center">
-						<h3 class="mx-0 my-3 text-[14px]">Proyectos nuevos</h3>
+						<h3 class="mx-0 my-3 text-[15px]">Proyectos nuevos</h3>
 						<app-progress-gauge
 							label="Presupuesto de proyectos nuevos"
 							color="#0072cc"
@@ -64,31 +64,31 @@
 						<strong class="text-[19px] max-[550.01px]:text-[16px]">
 							{{ data().newProjects | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}
 						</strong>
-						<p class="muted small text-[12px] text-(--muted)">Meta: {{ data().newProjectsGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</p>
+						<p class="muted small text-[13px] text-(--muted)">Meta: {{ data().newProjectsGoal | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</p>
 					</article>
 				</div>
 			</section>
 			<section class="panel mb-5.5 block min-w-0 overflow-hidden rounded-xl border border-solid border-(--border) bg-white p-5.5 shadow-[0_3px_16px_#1f3c6004] max-[550.01px]:p-4">
-				<h2 class="m-0 text-[17px]">Oportunidades importantes</h2>
-				<p class="muted small text-[12px] text-(--muted)">Las cinco oportunidades con mayor VPO al cierre</p>
+				<h2 class="m-0 text-[18px]">Oportunidades importantes</h2>
+				<p class="muted small text-[13px] text-(--muted)">Las cinco oportunidades con mayor VPO al cierre</p>
 				<div class="table-scroll mt-5 overflow-x-auto">
-					<table class="w-full border-collapse text-left text-[12px]">
+					<table class="w-full border-collapse text-left text-[13px]">
 						<thead>
 							<tr>
 								<th
-									class="border-t border-b [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] px-4.5 py-3.25 text-[11px] font-semibold whitespace-nowrap text-[#748294]"
+									class="border-t border-b [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] px-4.5 py-3.25 text-[12px] font-semibold whitespace-nowrap text-[#748294]"
 									scope="col"
 								>
 									Cliente
 								</th>
 								<th
-									class="border-t border-b [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] px-4.5 py-3.25 text-[11px] font-semibold whitespace-nowrap text-[#748294]"
+									class="border-t border-b [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] px-4.5 py-3.25 text-[12px] font-semibold whitespace-nowrap text-[#748294]"
 									scope="col"
 								>
 									Etapa
 								</th>
 								<th
-									class="border-t border-b [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] px-4.5 py-3.25 text-[11px] font-semibold whitespace-nowrap text-[#748294]"
+									class="border-t border-b [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] px-4.5 py-3.25 text-[12px] font-semibold whitespace-nowrap text-[#748294]"
 									scope="col"
 								>
 									VPO al cierre
@@ -100,7 +100,7 @@
 								<tr class="hover:bg-[#fbfdff]">
 									<td class="border-b [border-bottom-style:solid] border-b-[#edf1f5] px-4.5 py-4.25 align-middle">
 										<strong>{{ opportunity.client }}</strong>
-										<small class="muted record-id mt-1.25 block text-[10px] text-(--muted)"> Cliente #{{ opportunity.clientId }} · Oportunidad #{{ opportunity.id }} </small>
+										<small class="muted record-id mt-1.25 block text-[12px] text-(--muted)"> Cliente #{{ opportunity.clientId }} · Oportunidad #{{ opportunity.id }} </small>
 									</td>
 									<td class="border-b [border-bottom-style:solid] border-b-[#edf1f5] px-4.5 py-4.25 align-middle">
 										<span
@@ -130,29 +130,28 @@
 			</section>
 		</div>
 		<section class="panel funnel-panel mb-5.5 block min-w-0 overflow-hidden rounded-xl border border-solid border-(--border) bg-white p-5.5 shadow-[0_3px_16px_#1f3c6004] max-[550.01px]:p-4">
-			<h2 class="m-0 text-[17px]">Embudo de oportunidades</h2>
-			<p class="muted small text-[12px] text-(--muted)">{{ data().count }} oportunidades · {{ data().total | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} MXN</p>
+			<h2 class="m-0 text-[18px]">Embudo de oportunidades</h2>
+			<p class="muted small text-[13px] text-(--muted)">{{ data().count }} oportunidades · {{ data().total | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }} MXN</p>
 			<div class="funnel mx-0 my-7 flex flex-col items-center gap-1.5 max-[1050.01px]:mx-auto max-[1050.01px]:my-6 max-[1050.01px]:max-w-107.5">
 				@for (stage of data().stages; track stage.name; let i = $index) {
 					<div
-						class="funnel-stage grid min-h-25 justify-items-center gap-1.75 px-0 py-5 text-[14px] text-white [clip-path:polygon(0_0,100%_0,93%_100%,7%_100%)] [text-shadow:0_1px_2px_#00396c]"
+						class="funnel-stage grid min-h-25 justify-items-center gap-1.75 px-0 py-5 text-[15px] text-white [clip-path:polygon(0_0,100%_0,93%_100%,7%_100%)] [text-shadow:0_1px_2px_#00396c]"
 						[style.width.%]="100 - i * 12"
 						[style.background]="stage.color"
 					>
 						<strong>{{ stage.name }}</strong
 						><span class="text-[22px] font-bold">{{ stage.amount | currency: 'MXN' : 'symbol-narrow' : '1.0-0' }}</span
-						><small class="text-[11px]">{{ stage.count }} oportunidades · {{ stage.share }}%</small>
+						><small class="text-[12px]">{{ stage.count }} oportunidades · {{ stage.share }}%</small>
 					</div>
 				}
 			</div>
-			<p class="muted small text-[12px] text-(--muted)">El ancho indica la secuencia de etapas. Los porcentajes muestran su participación en el VPO total.</p>
 		</section>
 	</div>
 	<app-dashboard-statistics [data]="data()" />
 	<div class="dashboard-grid bottom-grid my-6 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-6 max-[1050.01px]:grid-cols-1">
 		<section class="panel mb-5.5 block min-w-0 overflow-hidden rounded-xl border border-solid border-(--border) bg-white p-5.5 shadow-[0_3px_16px_#1f3c6004] max-[550.01px]:p-4">
-			<h2 class="m-0 text-[17px]">Origen de las oportunidades</h2>
-			<p class="muted small text-[12px] text-(--muted)">Distribución entre leads y prospectos</p>
+			<h2 class="m-0 text-[18px]">Origen de las oportunidades</h2>
+			<p class="muted small text-[13px] text-(--muted)">Distribución entre leads y prospectos</p>
 			<div class="sources flex items-center justify-center gap-7.5 px-0 py-6.5 max-[550.01px]:flex-col max-[550.01px]:gap-6">
 				<div
 					class="donut grid h-47.5 w-47.5 shrink-0 place-items-center rounded-full"
@@ -162,10 +161,10 @@
 				>
 					<div class="flex h-33 w-33 flex-col items-center justify-center gap-1.25 rounded-full bg-white">
 						<strong class="text-[30px]">{{ sourceTotal() }}</strong
-						><span class="text-[11px] text-[#64748b]">oportunidades</span>
+						><span class="text-[12px] text-[#64748b]">oportunidades</span>
 					</div>
 				</div>
-				<div class="legend grid gap-5 text-[13px]">
+				<div class="legend grid gap-5 text-[14px]">
 					@for (source of data().sources; track source.name) {
 						<div class="flex items-center gap-2.5">
 							<span
@@ -180,19 +179,19 @@
 				</div>
 			</div>
 			@if (!sourceTotal()) {
-				<p class="muted small text-[12px] text-(--muted)">Sin datos para esta selección.</p>
+				<p class="muted small text-[13px] text-(--muted)">Sin datos para esta selección.</p>
 			}
 		</section>
 		<section class="panel mb-5.5 block min-w-0 overflow-hidden rounded-xl border border-solid border-(--border) bg-white p-5.5 shadow-[0_3px_16px_#1f3c6004] max-[550.01px]:p-4">
-			<h2 class="m-0 text-[17px]">Tiempo por etapa</h2>
-			<p class="muted small text-[12px] text-(--muted)">Promedio de días entre etapas</p>
+			<h2 class="m-0 text-[18px]">Tiempo por etapa</h2>
+			<p class="muted small text-[13px] text-(--muted)">Promedio de días entre etapas</p>
 			<div class="times">
 				@for (time of data().times; track time.from) {
-					<div class="flex items-center justify-between gap-3.5 border-b [border-bottom-style:solid] border-b-[#edf0f5] px-0 py-5 text-[13px]">
+					<div class="flex items-center justify-between gap-3.5 border-b [border-bottom-style:solid] border-b-[#edf0f5] px-0 py-5 text-[14px]">
 						<div>
 							<strong>{{ time.from }} → {{ time.to }}</strong
 							><small
-								class="mt-1.5 block text-[14px] leading-5 font-medium text-[#168664] [&.slow]:text-[#b42318]"
+								class="mt-1.5 block text-[15px] leading-5 font-medium text-[#168664] [&.slow]:text-[#b42318]"
 								[class.slow]="(time.days ?? 0) > 10"
 								>{{ time.days === null ? 'Sin datos' : time.days <= 5 ? 'Rápido' : time.days <= 10 ? 'En seguimiento' : 'Lento' }}</small
 							>
@@ -201,7 +200,7 @@
 					</div>
 				}
 			</div>
-			<div class="lifecycle mt-5 flex justify-between gap-3 rounded-[10px] bg-[#eff6ff] p-4 text-[13px] text-[#165da9]">
+			<div class="lifecycle mt-5 flex justify-between gap-3 rounded-[10px] bg-[#eff6ff] p-4 text-[14px] text-[#165da9]">
 				<span>Ciclo promedio total</span><strong>{{ data().totalDays === null ? '—' : (data().totalDays | number: '1.0-1') + ' días' }}</strong>
 			</div>
 		</section>

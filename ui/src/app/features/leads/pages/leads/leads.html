@@ -1,106 +1,139 @@
 <div class="mb-6">
-    <h1 class="text-[26px] font-semibold mb-2">Leads</h1>
-    <p class="text-(--muted)">
-        {{ store.auth.isManager() ? 'Distribuye los leads y da seguimiento a su desarrollo.' :
-        'Consulta los leads asignados a tu cuenta.' }}
-    </p>
+	<h1 class="mb-2 text-[26px] font-semibold">Leads</h1>
+	<p class="text-(--muted)">
+		{{ store.auth.isManager() ? 'Distribuye los leads y da seguimiento a su desarrollo.' : 'Consulta los leads asignados a tu cuenta.' }}
+	</p>
 </div>
-@if (store.allowed()) { @if(store.notice()) {
-<p role="status" class="rounded-lg bg-green-50 text-green-800 p-4 mb-5">{{ store.notice() }}</p>
-}
-<section
-    class="rounded-xl border border-(--border) bg-white p-5 mb-6"
-    aria-label="Filtros de leads"
->
-    <div class="flex justify-between items-center gap-4 mb-4">
-        <h2 class="font-semibold">Filtros de búsqueda</h2>
-        <button
-            type="button"
-            class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#cbddeb] bg-[#f5f9ff] px-3 py-2 text-sm font-semibold text-[#165da9] transition-colors hover:border-[#91bde3] hover:bg-[#e8f2ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007fc7] disabled:cursor-not-allowed disabled:opacity-40"
-            [disabled]="!store.search()"
-            (click)="store.setSearch('')"
-        >
-            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M3 4v6h6M3 10a9 9 0 1 1 2 9" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            Limpiar filtros
-        </button>
-    </div>
-    <div class="flex flex-wrap items-end gap-4">
-        <label class="grid gap-2 text-sm w-full sm:max-w-[420px]"
-            >Buscar lead<input
-                type="search"
-                class="border border-(--border) rounded-lg px-3 py-2.5 w-full"
-                placeholder="Buscar leads…"
-                [ngModel]="store.search()"
-                (ngModelChange)="store.setSearch($event)"
-        /></label>
-        <button
-            type="button"
-            class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#007fc7] bg-[#007fc7] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#006dae] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007fc7] disabled:cursor-wait disabled:opacity-50"
-            aria-label="Actualizar leads"
-            [disabled]="store.isLoading()"
-            (click)="store.refresh()"
-        >
-            <svg
-                class="size-4"
-                [class.animate-spin]="store.isLoading()"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-            >
-                <path
-                    d="M20 7v5h-5M4 17v-5h5M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                />
-            </svg>
-            Actualizar
-        </button>
-    </div>
-</section>
-<section
-    class="rounded-xl border border-(--border) bg-white overflow-hidden mb-6"
-    [attr.aria-busy]="store.isLoading()"
->
-    <div class="p-5 flex justify-between items-center">
-        <h2 class="font-semibold">
-            {{ store.auth.isManager() ? 'Leads de la sucursal' : 'Mis leads' }}
-        </h2>
-        <span class="text-sm text-(--muted)">{{ store.total() }} registros</span>
-    </div>
-    @if(store.isLoading()) {
-    <div role="status" class="m-5 flex items-center gap-3 rounded-xl border border-[#9cc8ee] bg-[#e4f1ff] px-5 py-4 text-[15px] font-semibold text-[#124f87] shadow-sm">
-        <span class="size-5 shrink-0 rounded-full border-2 border-[#a4c9e9] border-t-[#1268ae] motion-safe:animate-spin" aria-hidden="true"></span>
-        Cargando leads…
-    </div>
-    } @else if(store.error()) {
-    <div role="alert" class="p-6 text-red-700">
-        {{ store.error() }}
-        <button type="button" class="underline" (click)="store.refresh()">Reintentar</button>
-    </div>
-    } @else {
-    <app-leads-table
-        [rows]="store.leads()"
-        [manager]="store.auth.isManager()"
-        (selected)="store.selectedId.set($event)"
-    />
-    <app-pagination
-        [total]="store.total()"
-        [page]="store.page()"
-        [size]="store.size()"
-        (pageChange)="store.setPage($event)"
-        (sizeChange)="store.setSize($event)"
-    />
-    }
-</section>
-<app-modal
-    title="Detalle del lead"
-    [open]="!!store.selected()"
-    (closed)="!store.saving() && store.selectedId.set(null)"
->
-    @if(store.selected(); as lead) { <app-lead-detail [lead]="lead" /> }
-</app-modal>
+@if (store.allowed()) {
+	@if (store.notice()) {
+		<p
+			role="status"
+			class="mb-5 rounded-lg bg-green-50 p-4 text-green-800"
+		>
+			{{ store.notice() }}
+		</p>
+	}
+	<section
+		class="mb-6 rounded-xl border border-(--border) bg-white p-5"
+		aria-label="Filtros de leads"
+	>
+		<div class="mb-4 flex items-center justify-between gap-4">
+			<h2 class="font-semibold">Filtros de búsqueda</h2>
+			<button
+				class="action-button action-secondary"
+				type="button"
+				[disabled]="!store.search()"
+				(click)="store.setSearch('')"
+			>
+				<svg
+					class="size-4"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true"
+				>
+					<path
+						d="M3 4v6h6M3 10a9 9 0 1 1 2 9"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+				Limpiar filtros
+			</button>
+		</div>
+		<div class="flex flex-wrap items-end gap-4">
+			<label class="grid w-full gap-2 text-sm sm:max-w-[420px]"
+				>Buscar lead<input
+					type="search"
+					class="h-11 w-full rounded-lg border border-(--border) px-3 text-[13px]"
+					placeholder="Buscar leads…"
+					[ngModel]="store.search()"
+					(ngModelChange)="store.setSearch($event)"
+			/></label>
+			<button
+				class="action-button action-primary"
+				type="button"
+				aria-label="Actualizar leads"
+				[disabled]="store.isLoading()"
+				(click)="store.refresh()"
+			>
+				<svg
+					class="size-4"
+					[class.animate-spin]="store.isLoading()"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true"
+				>
+					<path
+						d="M20 7v5h-5M4 17v-5h5M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+				Actualizar
+			</button>
+		</div>
+	</section>
+	<section
+		class="mb-6 overflow-hidden rounded-xl border border-(--border) bg-white"
+		[attr.aria-busy]="store.isLoading()"
+	>
+		<div class="flex items-center justify-between p-5">
+			<h2 class="font-semibold">
+				{{ store.auth.isManager() ? 'Leads de la sucursal' : 'Mis leads' }}
+			</h2>
+			<span class="text-sm text-(--muted)">{{ store.total() }} registros</span>
+		</div>
+		@if (store.isLoading()) {
+			<div
+				role="status"
+				class="m-5 flex items-center gap-3 rounded-xl border border-[#9cc8ee] bg-[#e4f1ff] px-5 py-4 text-[15px] font-semibold text-[#124f87] shadow-sm"
+			>
+				<span
+					class="size-5 shrink-0 rounded-full border-2 border-[#a4c9e9] border-t-[#1268ae] motion-safe:animate-spin"
+					aria-hidden="true"
+				></span>
+				Cargando leads…
+			</div>
+		} @else if (store.error()) {
+			<div
+				role="alert"
+				class="p-6 text-red-700"
+			>
+				{{ store.error() }}
+				<button
+					type="button"
+					class="underline"
+					(click)="store.refresh()"
+				>
+					Reintentar
+				</button>
+			</div>
+		} @else {
+			<app-leads-table
+				[rows]="store.leads()"
+				[manager]="store.auth.isManager()"
+				(selected)="store.selectedId.set($event)"
+			/>
+			<app-pagination
+				[total]="store.total()"
+				[page]="store.page()"
+				[size]="store.size()"
+				(pageChange)="store.setPage($event)"
+				(sizeChange)="store.setSize($event)"
+			/>
+		}
+	</section>
+	<app-modal
+		title="Detalle del lead"
+		[open]="!!store.selected()"
+		(closed)="!store.saving() && store.selectedId.set(null)"
+	>
+		@if (store.selected(); as lead) {
+			<app-lead-detail [lead]="lead" />
+		}
+	</app-modal>
 }

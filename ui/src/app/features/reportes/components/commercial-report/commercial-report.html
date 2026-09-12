@@ -1,0 +1,131 @@
+<header class="mb-6">
+	<h1 class="text-2xl font-semibold">{{ title() }}</h1>
+	<p class="mt-2 text-sm text-slate-500">{{ tracking() ? 'Consulta el cierre de proyectos y su efectividad en ACYS y facturación.' : 'Consulta los prospectos y el tiempo transcurrido hasta generar proyectos.' }}</p>
+</header>
+@if (!auth.isFullyAuthenticated()) {
+	<p class="rounded-lg bg-blue-50 p-5">Inicia sesión para generar el reporte.</p>
+} @else {
+	<form
+		(ngSubmit)="export()"
+		class="rounded-xl border border-slate-200 bg-white p-5"
+		[attr.aria-busy]="busy() || loading()"
+	>
+		<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+			<h2 class="font-semibold">Filtros de búsqueda</h2>
+			<button
+				type="button"
+				class="action-button action-secondary"
+				[disabled]="busy()"
+				(click)="reset()"
+			>
+				Limpiar filtros
+			</button>
+		</div>
+		<fieldset
+			[disabled]="busy() || loading()"
+			class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+		>
+			<app-month-calendar
+				[label]="tracking() ? 'Periodo de cierre' : 'Desde'"
+				[value]="filters().start"
+				[max]="tracking() ? '' : filters().end"
+				(valueChange)="set('start', $event)"
+			/>
+			@if (!tracking()) {
+				<app-month-calendar
+					label="Hasta"
+					[value]="filters().end"
+					[min]="filters().start"
+					(valueChange)="set('end', $event)"
+				/>
+			}
+			@if (tracking()) {
+				<label class="field"
+					>Categoría de productos<select
+						name="category"
+						[ngModel]="filters().category"
+						(ngModelChange)="set('category', $event)"
+					>
+						<option value="">Todas</option>
+						@for (category of categories(); track category.value) {
+							<option [value]="category.value">{{ category.label }}</option>
+						}
+					</select></label
+				>
+			}
+			<label class="field"
+				>Tipo de cliente / prospecto<select
+					name="clientType"
+					[ngModel]="filters().clientType"
+					(ngModelChange)="set('clientType', $event)"
+				>
+					<option value="">Todos</option>
+					<option value="TD">TD (Tradicional)</option>
+					<option value="LD">LD (Leads)</option>
+				</select></label
+			>
+			@if (auth.isCentral()) {
+				<label class="field"
+					>Sucursal<select
+						name="branch"
+						[ngModel]="filters().branch"
+						(ngModelChange)="set('branch', $event)"
+					>
+						<option value="">Todas las sucursales</option>
+						@for (branch of branches(); track branch.value) {
+							<option [value]="branch.value">{{ branch.label }}</option>
+						}
+					</select></label
+				>
+			}
+		</fieldset>
+		@if (loading()) {
+			<p
+				role="status"
+				class="mt-5 text-sky-700"
+			>
+				Cargando filtros…
+			</p>
+		}
+		@if (catalogError()) {
+			<div
+				role="alert"
+				class="mt-5 rounded-lg bg-red-50 p-4 text-red-800"
+			>
+				{{ catalogError() }}
+				<button
+					type="button"
+					class="underline"
+					(click)="loadCatalogs()"
+				>
+					Reintentar
+				</button>
+			</div>
+		}
+		@if (error()) {
+			<p
+				role="alert"
+				class="mt-5 rounded-lg bg-red-50 p-4 text-red-800"
+			>
+				{{ error() }}
+			</p>
+		}
+		@if (status()) {
+			<p
+				role="status"
+				class="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800"
+			>
+				{{ status() }}
+			</p>
+		}
+		<div class="mt-6 flex justify-end border-t border-slate-100 pt-5">
+			<button
+				type="submit"
+				class="action-button action-primary"
+				[disabled]="busy() || loading() || !!catalogError()"
+			>
+				{{ busy() ? 'Generando reporte…' : 'Descargar Excel' }}
+			</button>
+		</div>
+	</form>
+}

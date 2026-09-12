@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms'
 import { UserRole } from '../../auth/auth.model'
 import { AuthStore } from '../../auth/auth.store'
 import { RikFilterStore } from '../../filters/rik-filter.store'
+import { LoadingService } from '../../loading/loading.service'
 @Component({
     host: { class: 'block sticky top-[0] z-[20]' },
     selector: 'app-header',
@@ -12,6 +13,7 @@ import { RikFilterStore } from '../../filters/rik-filter.store'
 export class AppHeader {
     readonly auth = inject(AuthStore)
     readonly rikFilter = inject(RikFilterStore)
+    readonly loading = inject(LoadingService)
     readonly showFilterByRik = input(false)
     readonly desktopOpen = input(true)
     readonly mobileOpen = input(false)

@@ -1,355 +1,179 @@
-<section
-    class="panel border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
->
-    <div
-        class="table-heading py-[22px] px-[24px] flex justify-between items-center max-[575.01px]:p-[18px]"
-    >
-        <div>
-            <h2 class="m-[0] text-[15px] font-[650]">Productos del proyecto #{{ projectId() }}</h2>
-            <p class="muted small text-[var(--muted)] text-[12px]">
-                Ajusta las cantidades y el precio de venta antes de guardar.
-            </p>
-        </div>
-        @if (editable) {
-            <button
-                type="button"
-                class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                (click)="modal.set(true)"
-            >
-                ＋ Agregar productos
-            </button>
-        }
-    </div>
-    @if (!editable) {
-        <div
-            class="alert info my-[20px] mx-[28px] py-[14px] px-[18px] border-[1px] border-solid border-[#d8eafb] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] bg-[#edf6ff] text-[#326a91]"
-        >
-            Este proyecto está finalizado o tiene precios pendientes de autorización. Puedes
-            consultar sus productos.
-        </div>
-    }
-    <div class="table-scroll overflow-x-auto">
-        <table class="w-full border-collapse text-[12px] text-left">
-            <thead>
-                <tr>
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    >
-                        SKU / Producto
-                    </th>
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    >
-                        Precio lista
-                    </th>
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    >
-                        Precio mínimo
-                    </th>
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    >
-                        Cantidad
-                    </th>
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    >
-                        Precio venta
-                    </th>
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    >
-                        Importe
-                    </th>
-                    <th
-                        class="py-[13px] px-[18px] border-t-[1px] border-b-[1px] [border-top-style:solid] [border-bottom-style:solid] border-t-[#edf1f5] border-b-[#edf1f5] bg-[#f8fafc] text-[#748294] text-[11px] font-semibold whitespace-nowrap"
-                    ></th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (product of products(); track product.sku) {
-                    <tr class="hover:bg-[#fbfdff]">
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        >
-                            <strong>{{ product.sku }}</strong
-                            ><small
-                                class="table-subline block text-[11px] whitespace-nowrap mt-[5px]"
-                                >{{ product.nombre }}</small
-                            >
-                        </td>
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        >
-                            {{ product.precioLista | currency: 'MXN' : 'symbol-narrow' }}
-                        </td>
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        >
-                            {{ product.precioMinimo | currency: 'MXN' : 'symbol-narrow' }}
-                        </td>
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        >
-                            <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-                                ><span class="sr-only">Cantidad de {{ product.nombre }}</span
-                                ><input
-                                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                                    #quantity
-                                    type="number"
-                                    min="0.01"
-                                    step="0.01"
-                                    [value]="product.cantidad"
-                                    [disabled]="!editable"
-                                    (input)="update(product.sku, 'cantidad', quantity.value)"
-                            /></label>
-                        </td>
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        >
-                            <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-                                ><span class="sr-only">Precio de {{ product.nombre }}</span
-                                ><input
-                                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                                    #price
-                                    type="number"
-                                    min="0.01"
-                                    step="0.01"
-                                    [value]="product.precioVenta"
-                                    [disabled]="!editable"
-                                    (input)="update(product.sku, 'precioVenta', price.value)"
-                            /></label>
-                            @if (product.precioVenta < product.precioMinimo) {
-                                <small class="field-error text-[#b72f40] text-[12px] font-normal"
-                                    >Requiere autorización</small
-                                >
-                            }
-                        </td>
-                        <td
-                            class="number py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle] text-right whitespace-nowrap"
-                        >
-                            {{
-                                product.cantidad * product.precioVenta
-                                    | currency: 'MXN' : 'symbol-narrow'
-                            }}
-                        </td>
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                        >
-                            @if (editable) {
-                                <button
-                                    type="button"
-                                    class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
-                                    [attr.aria-label]="'Quitar ' + product.nombre"
-                                    (click)="remove(product.sku)"
-                                >
-                                    Quitar
-                                </button>
-                            }
-                        </td>
-                    </tr>
-                } @empty {
-                    <tr class="hover:bg-[#fbfdff]">
-                        <td
-                            class="py-[17px] px-[18px] border-b-[1px] [border-bottom-style:solid] border-b-[#edf1f5] [vertical-align:middle]"
-                            colspan="7"
-                        >
-                            <app-empty-state
-                                title="Sin productos asignados"
-                                description="Agrega productos desde el catálogo o importa la plantilla CSV."
-                            />
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    @if (error()) {
-        <p
-            class="alert warning my-[20px] mx-[28px] py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] bg-[#fffaec] text-[#8c6818]"
-            role="alert"
-        >
-            {{ error() }}
-        </p>
-    }
-    <div
-        class="form-footer py-[22px] px-[28px] flex items-center justify-between gap-[16px] bg-[#fcfdff] max-[575.01px]:p-[20px] max-[575.01px]:items-start max-[575.01px]:flex-col"
-    >
-        <strong>Total: {{ total() | currency: 'MXN' : 'symbol-narrow' }}</strong>
-        @if (editable) {
-            <button
-                type="button"
-                class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                (click)="save()"
-            >
-                Guardar productos
-            </button>
-        }
-    </div>
+<section class="rounded-xl border border-slate-200 bg-white p-6">
+	<h2 class="mb-4 text-lg font-semibold">Productos · {{ project().aplicacion }}</h2>
+	@if (!editable()) {
+		<p class="mb-4 bg-blue-50 p-4">Consulta de productos. El proyecto está cerrado, cancelado o tiene autorizaciones pendientes.</p>
+	}
+	@if (error()) {
+		<p
+			role="alert"
+			class="mb-4 text-red-700"
+		>
+			{{ error() }}
+		</p>
+	}
+	@if (editable()) {
+		<div class="mb-5 flex flex-wrap items-end gap-4">
+			<label class="field flex flex-col gap-2"
+				>Buscar producto<input
+					[(ngModel)]="search"
+					(keyup.enter)="searchProducts()"
+					placeholder="SKU o descripción" /></label
+			><button
+				type="button"
+				class="action-button action-primary"
+				(click)="searchProducts()"
+				[disabled]="searching() || saving()"
+			>
+				Buscar</button
+			><button
+				type="button"
+				class="action-button action-secondary"
+				(click)="excelTemplate()"
+			>
+				Descargar plantilla Excel</button
+			><label
+				>Importar Excel<input
+					type="file"
+					accept=".xlsx"
+					[disabled]="saving()"
+					(change)="importExcel($event)" /></label
+			><button
+				type="button"
+				class="action-button action-secondary"
+				(click)="template()"
+			>
+				Plantilla CSV</button
+			><label
+				>Importar CSV<input
+					type="file"
+					accept=".csv"
+					[disabled]="saving()"
+					(change)="importFile($event)"
+			/></label>
+		</div>
+		@for (p of catalog(); track p.id) {
+			<button
+				class="mb-2 block w-full rounded-lg border border-sky-100 bg-sky-50 p-3 text-left text-sm text-sky-800 hover:bg-sky-100"
+				[disabled]="saving()"
+				(click)="add(p)"
+			>
+				＋ {{ p.id }} · {{ p.name }} · {{ p.precioLista | currency: 'MXN' : 'symbol-narrow' }}
+			</button>
+		}
+	}
+	<div class="overflow-x-auto rounded-xl border border-slate-200">
+		<table class="w-full min-w-200 text-left text-sm">
+			<thead class="bg-slate-50 text-xs text-slate-500">
+				<tr>
+					<th class="p-4">SKU / Producto</th>
+					<th class="p-4">Cantidad</th>
+					<th class="p-4">Precio lista</th>
+					<th class="p-4">Precio venta</th>
+					<th class="p-4">Importe</th>
+					<th class="p-4"></th>
+				</tr>
+			</thead>
+			<tbody>
+				@for (p of products(); track p.sku) {
+					<tr class="border-t border-slate-100 hover:bg-slate-50">
+						<td class="min-w-64 p-4 font-medium text-slate-800">
+							{{ p.sku }} · {{ p.descripcion }}
+							@if (p.estatusAutorizacion) {
+								<small class="block">Autorización pendiente</small>
+							}
+						</td>
+						<td class="p-4 tabular-nums">
+							<input
+								class="w-24 rounded-lg border border-slate-300 bg-white p-2 text-right focus:border-sky-600 disabled:bg-slate-100"
+								type="number"
+								min="1"
+								step="1"
+								[attr.aria-label]="'Cantidad de ' + p.descripcion"
+								[(ngModel)]="p.unidades"
+								[disabled]="!editable() || saving()"
+								(ngModelChange)="changed()"
+							/>
+						</td>
+						<td class="p-4 tabular-nums">{{ p.precioLista | currency: 'MXN' : 'symbol-narrow' }}</td>
+						<td class="p-4 tabular-nums">
+							<input
+								class="w-32 rounded-lg border border-slate-300 bg-white p-2 text-right focus:border-sky-600 disabled:bg-slate-100"
+								type="number"
+								min="0.01"
+								[attr.aria-label]="'Precio de venta de ' + p.descripcion"
+								[(ngModel)]="p.precioVenta"
+								[disabled]="!editable() || saving()"
+								(ngModelChange)="changed()"
+							/>
+						</td>
+						<td class="p-4 tabular-nums">{{ p.unidades * p.precioVenta | currency: 'MXN' : 'symbol-narrow' }}</td>
+						<td class="p-4 tabular-nums">
+							@if (editable()) {
+								<button
+									class="text-red-700"
+									[disabled]="saving()"
+									(click)="remove(p.sku)"
+								>
+									Eliminar
+								</button>
+							}
+						</td>
+					</tr>
+				} @empty {
+					<tr>
+						<td
+							colspan="6"
+							class="p-10 text-center text-slate-500"
+						>
+							No hay productos.
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	<p class="mt-4 rounded-lg bg-slate-50 p-4 text-right font-semibold text-slate-800">Total: {{ total() | currency: 'MXN' : 'symbol-narrow' }}</p>
+	@if (editable()) {
+		<button
+			class="action-button action-primary mt-4"
+			[disabled]="saving()"
+			(click)="save()"
+		>
+			Guardar productos
+		</button>
+	}
+	@if (validation().length) {
+		<section class="mt-6 rounded-lg bg-amber-50 p-5">
+			<h3 class="font-semibold">Solicitud de autorización de precios</h3>
+			@for (p of validation(); track p.id) {
+				<div class="mt-4 border-t pt-4">
+					<p>{{ p.id }} · {{ p.descripcion }} · Mínimo RIK: {{ p.precioVentaMinimoRik | currency: 'MXN' : 'symbol-narrow' }}</p>
+					<div class="mt-2 grid gap-3 sm:grid-cols-3">
+						<label class="field flex flex-col gap-2"
+							>Motivo<select [(ngModel)]="p.motivo">
+								<option [ngValue]="0">Selecciona un motivo</option>
+								<option [ngValue]="3">Otro</option>
+								<option [ngValue]="4">Precios de competencia</option>
+								<option [ngValue]="5">Tiene convenio</option>
+								<option [ngValue]="6">Cuenta nacional</option>
+								<option [ngValue]="7">Precio por licitación</option>
+							</select></label
+						><label class="field flex flex-col gap-2">Justificación<textarea [(ngModel)]="p.justificacion"></textarea></label
+						><label class="field flex flex-col gap-2"
+							>Vigencia<input
+								type="date"
+								[(ngModel)]="p.vigencia"
+						/></label>
+					</div>
+				</div>
+			}
+			<button
+				class="mt-4 rounded-lg bg-sky-700 px-4 py-2 text-white"
+				[disabled]="saving()"
+				(click)="authorize()"
+			>
+				Enviar solicitud de autorización
+			</button>
+		</section>
+	}
 </section>
-<app-modal
-    title="Agregar productos"
-    [open]="modal()"
-    (closed)="modal.set(false)"
-    ><label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-        >Buscar en el catálogo<input
-            class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-            type="search"
-            placeholder="Nombre o SKU…"
-            [formControl]="search"
-    /></label>
-    <div class="catalog-list my-[20px] mx-[0] grid gap-[10px]">
-        @for (product of catalog(); track product.sku) {
-            <div
-                class="catalog-row p-[16px] border-[1px] border-solid border-[var(--border)] flex justify-between items-center gap-[16px] rounded-[8px] text-[13px] max-[575.01px]:flex-wrap"
-            >
-                <div class="flex-[1] max-[575.01px]:[flex-basis:100%]">
-                    <strong>{{ product.nombre }}</strong
-                    ><small
-                        class="table-subline muted text-[var(--muted)] block text-[11px] whitespace-nowrap mt-[5px]"
-                        >{{ product.sku }} · {{ product.categoria }}</small
-                    >
-                </div>
-                <span>{{ product.precioLista | currency: 'MXN' : 'symbol-narrow' }}</span
-                ><button
-                    type="button"
-                    class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                    [disabled]="hasProduct(product.sku) || !editable"
-                    (click)="add(product.sku)"
-                >
-                    Agregar
-                </button>
-            </div>
-        } @empty {
-            <app-empty-state />
-        }
-    </div>
-    <div
-        class="import-box p-[20px] border-[1px] border-dashed border-[#bdd3e5] bg-[#f5f9fd] rounded-[9px]"
-    >
-        <h3 class="text-[15px] font-semibold mb-[10px]">Carga masiva</h3>
-        <p class="muted small text-[var(--muted)] text-[12px]">
-            Importa productos del catálogo con la plantilla CSV. Usa punto decimal, sin separadores
-            de miles.
-        </p>
-        <div class="actions flex items-center gap-[10px] flex-wrap">
-            <button
-                type="button"
-                class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-                (click)="template()"
-            >
-                ↓ Descargar plantilla</button
-            ><label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-                >Seleccionar CSV<input
-                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                    type="file"
-                    accept=".csv,text/csv"
-                    (change)="importFile($event)"
-            /></label>
-        </div>
-        @if (error()) {
-            <p
-                class="field-error text-[#b72f40] text-[12px] font-normal"
-                role="alert"
-            >
-                {{ error() }}
-            </p>
-        }
-    </div>
-    <div
-        class="actions end opportunity-actions flex items-center gap-[10px] flex-wrap justify-end mt-[20px]"
-    >
-        <span class="muted small text-[var(--muted)] text-[12px]"
-            >{{ products().length }} productos agregados</span
-        ><button
-            type="button"
-            class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-            (click)="modal.set(false)"
-        >
-            Listo
-        </button>
-    </div></app-modal
->
-<app-modal
-    title="Autorización de precios"
-    [open]="authorization()"
-    (closed)="authorization.set(false)"
-    ><p
-        class="alert warning py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818]"
-    >
-        Hay precios por debajo del mínimo. Completa los datos para registrar la solicitud de
-        demostración.
-    </p>
-    @for (product of belowMinimum(); track product.sku) {
-        <div
-            class="price-request py-[18px] px-[0] border-b-[1px] [border-bottom-style:solid] border-b-[var(--border)]"
-        >
-            <h3 class="text-[15px] font-semibold mb-[10px]">
-                {{ product.sku }} · {{ product.nombre }}
-            </h3>
-            <p class="muted text-[var(--muted)]">
-                Precio solicitado: {{ product.precioVenta | currency: 'MXN' : 'symbol-narrow' }} ·
-                Mínimo:
-                {{ product.precioMinimo | currency: 'MXN' : 'symbol-narrow' }}
-            </p>
-            <div class="form-grid grid grid-cols-2 gap-[20px] max-[575.01px]:grid-cols-1">
-                <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-                    >Motivo<select
-                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                        #reason
-                        [value]="product.motivo || ''"
-                        (change)="update(product.sku, 'motivo', reason.value)"
-                    >
-                        <option value="">Seleccionar</option>
-                        @for (reason of reasons; track reason) {
-                            <option>{{ reason }}</option>
-                        }
-                    </select></label
-                ><label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-                    >Vigencia<input
-                        class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                        #date
-                        type="date"
-                        [value]="product.vigencia || ''"
-                        (change)="update(product.sku, 'vigencia', date.value)"
-                /></label>
-            </div>
-            <label
-                class="field opportunity-actions flex flex-col gap-[7px] text-[12px] font-[550] mt-[20px]"
-                >Justificación<textarea
-                    class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] resize-y focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                    #note
-                    rows="2"
-                    [value]="product.justificacion || ''"
-                    (input)="update(product.sku, 'justificacion', note.value)"
-                ></textarea>
-            </label>
-        </div>
-    }
-    @if (error()) {
-        <p
-            class="alert warning py-[14px] px-[18px] border-[1px] border-solid border-[#f3e6bd] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#fffaec] text-[#8c6818]"
-            role="alert"
-        >
-            {{ error() }}
-        </p>
-    }
-    <div
-        class="actions end opportunity-actions flex items-center gap-[10px] flex-wrap justify-end mt-[20px]"
-    >
-        <button
-            type="button"
-            class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-            (click)="authorization.set(false)"
-        >
-            Volver a precios</button
-        ><button
-            type="button"
-            class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-            (click)="commit()"
-        >
-            Registrar solicitud y guardar
-        </button>
-    </div></app-modal
->

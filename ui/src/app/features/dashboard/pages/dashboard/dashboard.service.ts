@@ -50,6 +50,7 @@ export class DashboardService {
 	})
 
 	readonly data = computed(() => mapDashboard(this.dashboardResource.hasValue() ? this.dashboardResource.value() : undefined))
+	readonly isLoading = computed(() => this.catalogLoading() || this.dashboardResource.isLoading())
 
 	constructor() {
 		effect(() => {
@@ -60,6 +61,7 @@ export class DashboardService {
 				if (loggedIn) void this.initialize(central)
 				else {
 					++this.catalogVersion
+					this.catalogLoading.set(false)
 					this.query.set(undefined)
 				}
 			})
@@ -90,7 +92,7 @@ export class DashboardService {
 		this.catalogLoading.set(!!group)
 		if (!group) return
 		try {
-			const rows = await firstValueFrom(this.apiService.getSucursales(Number(group)))
+			const rows = await this.loadingService.wrap(firstValueFrom(this.apiService.getSucursales(Number(group))))
 			if (version !== this.catalogVersion) return
 			this.branches.set(rows)
 			await this.selectBranches(rows.map((r) => String(r.id)))
@@ -113,7 +115,7 @@ export class DashboardService {
 		this.catalogLoading.set(branch !== null)
 		if (branch === null) return
 		try {
-			const rows = await firstValueFrom(this.apiService.getRiks(branch))
+			const rows = await this.loadingService.wrap(firstValueFrom(this.apiService.getRiks(branch)))
 			if (version !== this.catalogVersion) return
 			this.reps.set(rows)
 			this.filter.update((f) => ({
@@ -151,7 +153,7 @@ export class DashboardService {
 	}
 
 	apply() {
-		if (!this.auth.isFullyAuthenticated() || this.catalogLoading()) return false
+		if (!this.auth.isFullyAuthenticated() || this.isLoading()) return false
 		const f = this.filter()
 		if (![f.start, f.end].every((d) => /^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(d)) || f.start > f.end) {
 			this.error.set('Selecciona un periodo válido: Desde debe ser anterior o igual a Hasta.')

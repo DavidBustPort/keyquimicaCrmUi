@@ -1,13 +1,16 @@
 <section
 	class="mb-6 rounded-xl border border-(--border) bg-white p-5"
 	aria-label="Filtros del dashboard"
+	[attr.aria-busy]="store.isLoading()"
+	[attr.inert]="store.isLoading() ? '' : null"
+	[class.opacity-60]="store.isLoading()"
 >
 	<div class="mb-5 flex flex-wrap items-center justify-between gap-3">
 		<div>
 			<strong>Vista comercial</strong>
-			<p class="mt-1 text-xs text-(--muted)">Selecciona el alcance y el periodo de consulta</p>
+			<p class="mt-1 text-[13px] text-(--muted)">Selecciona el alcance y el periodo de consulta</p>
 		</div>
-		<span class="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700">
+		<span class="rounded-full bg-blue-50 px-3 py-1 text-[13px] text-blue-700">
 			{{ auth.isCentral() ? 'Oficina central' : (auth.isManager() ? 'Gerente · ' : 'Sucursal· ') + auth.sucursalId() }}
 		</span>
 	</div>
@@ -20,7 +23,7 @@
 				>Grupo
 				<select
 					name="group"
-					class="rounded-lg border border-(--border) bg-white p-3"
+					class="h-11 rounded-lg border border-(--border) bg-white px-3 text-[13px]"
 					[ngModel]="draft().group"
 					(ngModelChange)="store.group($event)"
 				>
@@ -61,8 +64,8 @@
 			[class.w-full]="auth.isCentral()"
 		>
 			<button
+				class="action-button action-primary w-full"
 				type="submit"
-				class="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-[#007fc7] bg-[#007fc7] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#006dae] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007fc7] disabled:cursor-wait disabled:opacity-50"
 				aria-label="Actualizar dashboard"
 				[disabled]="store.catalogLoading() || store.dashboardResource.isLoading() || !auth.isFullyAuthenticated()"
 			>
@@ -87,7 +90,7 @@
 		</div>
 	</form>
 	@if (auth.isCentral() && draft().branches.length !== 1) {
-		<p class="mt-3 text-xs text-(--muted)">Selecciona una sola sucursal para filtrar por RIK.</p>
+		<p class="mt-3 text-[13px] text-(--muted)">Selecciona una sola sucursal para filtrar por RIK.</p>
 	}
 	@if (store.error()) {
 		<p
@@ -108,7 +111,7 @@
 	}
 	@if (store.applied(); as applied) {
 		<p
-			class="mt-4 text-xs text-(--muted)"
+			class="mt-4 text-[13px] text-(--muted)"
 			aria-live="polite"
 		>
 			Periodo consultado: {{ applied.start }} — {{ applied.end }}

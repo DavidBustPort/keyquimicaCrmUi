@@ -1,3 +1,6 @@
+import { MonthCalendar } from '@shared/ui/month-calendar/month-calendar'
+import { TableLoading } from '@shared/ui/table-loading/table-loading'
+import { ScrollToResults } from '@shared/directives/scroll-to-results'
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core'
 import { CurrencyPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
@@ -7,7 +10,7 @@ import { ProspectosService } from '@features/prospectos/data-access/prospectos.s
 import { ProspectoDetail, ProspectoRow, STAGES, stageTotals } from '@features/prospectos/models/prospecto'
 import { Pagination } from '@shared/ui/pagination/pagination'
 import { Modal } from '@shared/ui/modal/modal'
-@Component({ selector: 'app-prospectos-list', imports: [CurrencyPipe, FormsModule, RouterLink, Pagination, Modal], providers: [ProspectosService], templateUrl: './prospectos-list.html' })
+@Component({ selector: 'app-prospectos-list', imports: [MonthCalendar, TableLoading, ScrollToResults, CurrencyPipe, FormsModule, RouterLink, Pagination, Modal], providers: [ProspectosService], templateUrl: './prospectos-list.html' })
 export class ProspectosList {
 	readonly store = inject(ProspectosService)
 	readonly stages = STAGES
@@ -16,9 +19,8 @@ export class ProspectosList {
 	readonly selected = signal<ProspectoRow | null>(null)
 	readonly detailLoading = signal(false)
 	readonly detailError = signal('')
-	readonly showDetails = signal(false)
-	readonly totalVpo = computed(() => this.store.rows().reduce((sum, p) => sum + p.vpo, 0))
-	readonly completed = computed(() => this.store.rows().filter((p) => p.registro).length)
+	readonly showDetails = computed(() => this.store.auth.isManager() && this.store.managerDetails())
+
 	private detailVersion = 0
 	constructor() {
 		effect(() => {

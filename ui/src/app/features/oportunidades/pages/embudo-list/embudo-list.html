@@ -1,128 +1,412 @@
-<div
-    class="page-heading mx-[0] flex justify-between items-center gap-[20px] mt-[4px] mb-[26px] max-[1100.01px]:items-start max-[1100.01px]:flex-col"
->
-    <div>
-        <span class="eyebrow text-[11px] tracking-[1.1px] font-semibold text-[#51738e]"
-            >GESTIÓN COMERCIAL</span
-        >
-        <h1
-            class="mx-[0] text-[26px] font-[650] tracking-[-0.65px] leading-[1.3] mt-[5px] mb-[7px] max-[575.01px]:text-[23px]"
-        >
-            Embudo de Proyectos
-        </h1>
-        <p class="muted m-[0] text-[var(--muted)]">
-            Acompaña cada oportunidad desde el análisis hasta el cierre.
-        </p>
-    </div>
-    <div class="actions flex items-center gap-[10px] flex-wrap">
-        <button
-            type="button"
-            class="btn btn-secondary py-[10px] px-[16px] border-[1px] border-solid border-[#dce4ed] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-white text-[#46576a] hover:bg-[#f3f7fb] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-            [disabled]="!filtered().length"
-            (click)="export()"
-        >
-            ↓ Exportar CSV</button
-        ><a
-            class="btn btn-primary py-[10px] px-[16px] border-[1px] border-solid border-[#007fc7] inline-flex items-center justify-center gap-[8px] min-h-[40px] rounded-[7px] font-semibold text-[13px] leading-[1.3] no-underline cursor-pointer [transition:background_0.15s] bg-[#007fc7] text-white hover:bg-[#006dae] disabled:opacity-[0.45] disabled:cursor-not-allowed"
-            routerLink="/oportunidades-proyectos/oportunidades"
-            >＋ Nueva oportunidad</a
-        >
-    </div>
-</div>
-@if (store.notice()) {
-    <div
-        class="alert success py-[14px] px-[18px] border-[1px] border-solid border-[#ceecdf] rounded-[8px] flex items-center justify-between gap-[12px] text-[13px] mb-[18px] bg-[#eaf8f1] text-[#267454]"
-        role="status"
-    >
-        <span>{{ store.notice() }}</span
-        ><button
-            type="button"
-            class="icon-button"
-            aria-label="Cerrar mensaje"
-            (click)="store.notice.set('')"
-        >
-            ×
-        </button>
-    </div>
+<header class="mb-6 flex flex-wrap items-center justify-between gap-4">
+	<h1 class="text-2xl font-semibold">Embudo de proyectos</h1>
+	@if (canEdit()) {
+		<button
+			type="button"
+			class="action-button action-primary"
+			(click)="clientPickerOpen.set(true)"
+		>
+			Desarrollar oportunidades
+		</button>
+	}
+</header>
+@if (!allowed()) {
+	<p class="rounded-lg bg-blue-50 p-5">Inicia sesión en una sucursal para consultar oportunidades.</p>
+} @else {
+	<section class="mb-5 rounded-xl border border-slate-200 bg-white p-5">
+		<div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+			<h2 class="font-semibold">Filtros de búsqueda</h2>
+			<button
+				class="action-button action-secondary"
+				(click)="clear()"
+				type="button"
+			>
+				<svg
+					class="size-4"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true"
+				>
+					<path
+						d="M3 4v6h6M3 10a9 9 0 1 1 2 9"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/></svg
+				>Limpiar filtros
+			</button>
+		</div>
+		<div class="grid gap-4 sm:grid-cols-3">
+			<label class="field flex flex-col gap-2"
+				>Cliente o prospecto<input
+					type="search"
+					[ngModel]="filters().search"
+					(ngModelChange)="filter('search', $event)" /></label
+			><app-month-calendar
+				label="Mes de registro"
+				[value]="filters().period"
+				(valueChange)="filter('period', $event)"
+			/><label class="field flex flex-col gap-2"
+				>Etapa<select
+					[ngModel]="filters().etapa"
+					(ngModelChange)="filter('etapa', $event)"
+				>
+					<option value="">Todas</option>
+					@for (s of stages; track s; let i = $index) {
+						<option [value]="i + 1">{{ s }}</option>
+					}
+				</select></label
+			>
+		</div>
+		<div class="mt-4 flex gap-5">
+			<button
+				class="action-button action-primary"
+				[disabled]="loading()"
+				(click)="refresh()"
+				type="button"
+			>
+				<svg
+					class="size-4"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true"
+				>
+					<path
+						d="M20 7v5h-5M4 17v-5h5M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/></svg
+				>Actualizar
+			</button>
+		</div>
+	</section>
+	@if (error()) {
+		<p
+			role="alert"
+			class="mb-4 rounded-lg bg-red-50 p-4 text-red-800"
+		>
+			{{ error() }}
+		</p>
+	}
+	@if (notice()) {
+		<p
+			role="status"
+			class="mb-4 rounded-lg bg-emerald-50 p-4"
+		>
+			{{ notice() }}
+		</p>
+	}
+	<section
+		class="overflow-hidden rounded-xl border border-slate-200 bg-white"
+		[appScrollToResults]="loading()"
+		[resultsError]="error()"
+		[attr.aria-busy]="loading()"
+	>
+		<div class="flex flex-wrap items-center justify-between gap-4 p-5">
+			<h2 class="font-semibold">
+				Embudo de proyectos <span class="text-sm font-normal text-slate-500">({{ total() }})</span>
+			</h2>
+			<button
+				class="action-button action-primary"
+				type="button"
+				[disabled]="loading() || exporting() || !total()"
+				(click)="export()"
+			>
+				{{ exporting() ? 'Descargando…' : 'Exportar Excel' }}
+			</button>
+		</div>
+		@if (loading()) {
+			<app-table-loading label="Cargando embudo…" />
+		} @else {
+			<div class="overflow-x-auto">
+				<table class="w-full text-left text-sm">
+					<thead class="bg-slate-50 text-xs text-slate-500">
+						<tr>
+							<th class="p-3"># Oportunidad</th>
+							<th class="p-3">Fuente</th>
+							<th class="p-3">Cliente/Prospecto</th>
+							<th class="p-3">Aplicación</th>
+							<th class="p-3 text-right">VPO</th>
+							<th class="p-3 text-right">VPT</th>
+							<th class="p-3 text-center">Integralidad</th>
+							<th
+								scope="col"
+								title="Análisis"
+								class="bg-[#00a3ff] p-3 text-center text-white"
+							>
+								<abbr
+									class="no-underline"
+									title="Análisis"
+									>A</abbr
+								>
+							</th>
+							<th
+								scope="col"
+								title="Promoción"
+								class="bg-[#008be6] p-3 text-center text-white"
+							>
+								<abbr
+									class="no-underline"
+									title="Promoción"
+									>P</abbr
+								>
+							</th>
+							<th
+								scope="col"
+								title="Negociación"
+								class="bg-[#0072cc] p-3 text-center text-white"
+							>
+								<abbr
+									class="no-underline"
+									title="Negociación"
+									>N</abbr
+								>
+							</th>
+							<th
+								scope="col"
+								title="Cierre"
+								class="bg-[#005bb3] p-3 text-center text-white"
+							>
+								<abbr
+									class="no-underline"
+									title="Cierre"
+									>C</abbr
+								>
+							</th>
+							<th class="p-3 text-right">ACYS</th>
+							<th class="p-3 text-right">Facturación</th>
+							<th class="p-3"><span class="sr-only">Acciones</span></th>
+						</tr>
+					</thead>
+					<tbody>
+						@for (p of rows(); track p.idOportunidad) {
+							<tr
+								class="border-t border-slate-100 hover:bg-slate-50"
+								[class.opacity-60]="p.etapa === 5"
+							>
+								<td class="p-3 font-semibold">
+									#{{ p.idOportunidad }}
+									@if (p.etapa === 5) {
+										<span class="mt-1 block text-xs text-red-700">Cancelada</span>
+									}
+								</td>
+								<td class="p-3">{{ p.fuente || '—' }}</td>
+								<td class="max-w-48 p-3 wrap-break-word">{{ p.cliente }}</td>
+								<td class="max-w-48 p-3 wrap-break-word">{{ p.aplicacion }}</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">{{ p.vpo | currency: 'MXN' : 'symbol-narrow' }}</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">{{ p.vpt | currency: 'MXN' : 'symbol-narrow' }}</td>
+								<td class="p-3 text-center">{{ p.integralidad }}</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">
+									@if (p.etapa === 1) {
+										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									}
+								</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">
+									@if (p.etapa === 2) {
+										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									}
+								</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">
+									@if (p.etapa === 3) {
+										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									}
+								</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">
+									@if (p.etapa === 4) {
+										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									}
+								</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">{{ p.acys > 0 ? (p.acys | currency: 'MXN' : 'symbol-narrow') : '' }}</td>
+								<td class="p-3 text-right whitespace-nowrap tabular-nums">{{ p.facturacion > 0 ? (p.facturacion | currency: 'MXN' : 'symbol-narrow') : '' }}</td>
+								<td class="p-3">
+									<button
+										type="button"
+										class="rounded-lg border border-sky-200 px-3 py-2 text-sky-700 hover:bg-sky-50"
+										(click)="open(p)"
+									>
+										Detalle
+									</button>
+									@if (canEdit() && p.etapa !== 5) {
+										<div class="mt-2 flex flex-col items-start gap-2">
+											<button
+												type="button"
+												class="text-sm font-semibold text-sky-700 hover:underline"
+												(click)="open(p); action.set('vpo')"
+											>
+												Actualizar VPO
+											</button>
+											<a
+												class="text-sm font-semibold text-sky-700 hover:underline"
+												[routerLink]="['/oportunidades-proyectos/oportunidades', p.idCliente || p.idProspecto, p.idOportunidad]"
+												>Editar oportunidad</a
+											>
+										</div>
+									}
+								</td>
+							</tr>
+						} @empty {
+							<tr>
+								<td
+									colspan="14"
+									class="p-10 text-center text-slate-500"
+								>
+									{{ error() ? 'No se pudo obtener la información.' : 'No hay oportunidades para estos filtros.' }}
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		@if (!loading()) {
+			<app-pagination
+				[total]="total()"
+				[page]="page()"
+				[size]="size()"
+				[sizes]="[10, 20, 50]"
+				(pageChange)="page.set($event)"
+				(sizeChange)="size.set($event); page.set(1)"
+			/>
+		}
+	</section>
 }
-<div
-    class="pipeline-summary grid grid-cols-5 gap-[12px] mb-[24px] max-[1100.01px]:grid-cols-3 max-[575.01px]:grid-cols-2"
+<app-modal
+	[open]="selected() !== null"
+	[title]="action() === 'vpo' ? 'Actualizar VPO' : 'Detalle del proyecto'"
+	(closed)="selected.set(null)"
 >
-    @for (item of summaries(); track item.stage) {
-        <button
-            type="button"
-            class="pipeline-card p-[18px] border-t-[3px] border-r-[1px] border-b-[1px] border-l-[1px] border-solid border-t-[#80bfe5] border-r-[var(--border)] border-b-[var(--border)] border-l-[var(--border)] text-left rounded-[10px] bg-white cursor-pointer text-[var(--text)] max-[575.01px]:p-[14px]"
-            [class.selected-stage]="filters.controls.etapa.value === item.stage"
-            [attr.aria-pressed]="filters.controls.etapa.value === item.stage"
-            (click)="
-                filters.controls.etapa.setValue(
-                    filters.controls.etapa.value === item.stage ? '' : item.stage
-                )
-            "
-        >
-            <span class="flex justify-between gap-[8px] text-[12px] text-[var(--muted)]"
-                >{{ item.stage }} <small>{{ item.count }}</small></span
-            ><strong class="block mt-[12px] text-[20px] font-semibold max-[575.01px]:text-[18px]">{{
-                item.total | currency: 'MXN' : 'symbol-narrow' : '1.0-0'
-            }}</strong>
-        </button>
-    }
-</div>
-<section
-    class="panel filters-panel py-[22px] px-[24px] border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px] max-[575.01px]:p-[18px]"
-    aria-label="Filtros de oportunidades"
->
-    <div class="section-heading flex items-center justify-between gap-[16px] mb-[18px]">
-        <h2 class="m-[0] text-[15px] font-[650]">Filtros de búsqueda</h2>
-        <button
-            type="button"
-            class="text-link p-[0] border-[0] bg-[none] text-[#0073b6] no-underline [font-family:inherit] text-[12px] font-semibold [font-style:inherit] leading-[inherit] cursor-pointer hover:underline"
-            (click)="filters.reset()"
-        >
-            Limpiar filtros
-        </button>
-    </div>
-    <div class="filter-grid grid grid-cols-3 gap-[16px] max-[575.01px]:grid-cols-1">
-        <label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-            >Cliente, prospecto o proyecto<input
-                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                type="search"
-                placeholder="Buscar por nombre o ID…"
-                [formControl]="filters.controls.search" /></label
-        ><label class="field flex flex-col gap-[7px] text-[12px] font-[550]"
-            >Periodo de registro<input
-                class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
-                type="month"
-                [formControl]="filters.controls.period" /></label
-        ><app-select-field
-            label="Etapa"
-            fieldId="etapa"
-            placeholder="Todas"
-            [control]="filters.controls.etapa"
-            [options]="stages"
-        />
-    </div>
-</section>
-<section
-    class="panel border-[1px] border-solid border-[var(--border)] bg-white rounded-[12px] shadow-[0_3px_16px_#1f3c6004] overflow-hidden mb-[22px]"
->
-    <div
-        class="table-heading py-[22px] px-[24px] flex justify-between items-center max-[575.01px]:p-[18px]"
-    >
-        <h2 class="m-[0] text-[15px] font-[650]">
-            Oportunidades
-            <span
-                class="badge py-[4px] px-[8px] border-[1px] border-solid border-[#dcecf8] inline-flex bg-[#eaf4fc] text-[#39739b] text-[11px] rounded-[5px] whitespace-nowrap ml-[8px]"
-                >{{ filtered().length }}</span
-            >
-        </h2>
-        <span class="muted small text-[var(--muted)] text-[12px]">Datos de demostración · MXN</span>
-    </div>
-    <app-proyectos-table [rows]="rows()" /><app-pagination
-        [total]="filtered().length"
-        [page]="page()"
-        [size]="size()"
-        (pageChange)="page.set($event)"
-        (sizeChange)="size.set($event); page.set(1)"
-    />
-</section>
+	@if (selected(); as p) {
+		<h2 class="text-lg font-semibold">{{ p.cliente }} · {{ p.aplicacion }}</h2>
+		<p>{{ stages[p.etapa - 1] }} · {{ p.detalle.fechaRegistro | date: 'dd/MM/yyyy' }} · {{ p.detalle.duracionProyecto }}</p>
+		@if (error()) {
+			<p
+				role="alert"
+				class="mt-3 text-red-700"
+			>
+				{{ error() }}
+			</p>
+		}
+		@if (action() === 'detail') {
+			<table class="my-5 w-full text-sm">
+				<thead>
+					<tr>
+						<th class="p-4">Producto</th>
+						<th class="p-4">Cantidad</th>
+						<th class="p-4">Precio</th>
+					</tr>
+				</thead>
+				<tbody>
+					@for (product of p.detalle.productos; track product.sku) {
+						<tr>
+							<td class="p-4">
+								{{ product.sku }} · {{ product.descripcion }}
+								@if (product.estatusAutorizacion) {
+									<small>Pendiente de autorización</small>
+								}
+							</td>
+							<td class="p-4">{{ product.unidades }}</td>
+							<td class="p-4">{{ product.precio | currency: 'MXN' : 'symbol-narrow' }}</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			@if (p.causaCancelacion) {
+				<p>Motivo: {{ p.causaCancelacion }}</p>
+			}
+			@if (canEdit() && p.etapa < 4 && !hasPending(p)) {
+				<div class="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5">
+					<button
+						type="button"
+						class="action-button border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-red-100"
+						[disabled]="saving()"
+						(click)="cancelDialog()"
+					>
+						Cancelar proyecto
+					</button>
+					@if (p.etapa === 2) {
+						<button
+							[disabled]="saving()"
+							type="button"
+							class="action-button action-primary"
+							(click)="execute('negotiate')"
+						>
+							Pasar a negociación
+						</button>
+					}
+					@if (p.etapa === 2 || p.etapa === 3) {
+						<button
+							type="button"
+							class="action-button border-emerald-700 bg-emerald-700 text-white shadow-sm hover:bg-emerald-800"
+							[disabled]="saving()"
+							(click)="action.set('close')"
+						>
+							Cerrar proyecto
+						</button>
+					}
+				</div>
+			}
+		} @else {
+			<div class="mt-5">
+				@if (action() === 'vpo') {
+					<label class="field flex flex-col gap-2"
+						>VPO (MXN)<input
+							type="number"
+							min="0.01"
+							step="0.01"
+							[disabled]="saving()"
+							[(ngModel)]="vpo" /></label
+					><button
+						[disabled]="saving()"
+						class="action-button action-primary mt-4"
+						(click)="execute('vpo')"
+					>
+						Guardar VPO
+					</button>
+				}
+				@if (action() === 'cancel') {
+					<label class="field flex flex-col gap-2"
+						>Motivo de cancelación<select [(ngModel)]="reason">
+							<option [ngValue]="0">Selecciona un motivo</option>
+							@for (r of reasons(); track r.id) {
+								<option [ngValue]="r.id">{{ r.name }}</option>
+							}
+						</select></label
+					><button
+						type="button"
+						class="action-button mt-4 border-red-700 bg-red-700 text-white hover:bg-red-800"
+						[disabled]="saving()"
+						(click)="execute('cancel')"
+					>
+						Confirmar cancelación
+					</button>
+				}
+				@if (action() === 'close') {
+					<p>Se registrarán los productos en el ACYS del cliente y territorio, y se cerrará la oportunidad.</p>
+					<button
+						type="button"
+						class="action-button mt-4 border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800"
+						[disabled]="saving()"
+						(click)="execute('close')"
+					>
+						Confirmar cierre
+					</button>
+				}
+				<button
+					type="button"
+					class="action-button action-secondary mt-4 sm:ml-3"
+					[disabled]="saving()"
+					(click)="action.set('detail')"
+				>
+					Volver
+				</button>
+			</div>
+		}
+	}
+</app-modal>
+
+@if (clientPickerOpen() && canEdit()) {
+	<app-cliente-picker (closed)="clientPickerOpen.set(false)" />
+}

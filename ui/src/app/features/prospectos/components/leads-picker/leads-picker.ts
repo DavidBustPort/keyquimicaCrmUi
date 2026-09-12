@@ -1,11 +1,10 @@
+import { latestSearch } from '@shared/rxjs/latest-search'
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { catchError, firstValueFrom, of, Subject, switchMap } from 'rxjs'
+import { catchError, firstValueFrom, of, Subject } from 'rxjs'
 import { AuthStore } from '@core/auth/auth.store'
 import { UserRole } from '@core/auth/auth.model'
-import { LeadsApiService } from '@features/leads/data-access/leads-api.service'
-import { LeadsQuery, mapLead } from '@features/leads/models/leads-api.model'
 import { ProspectosApiService } from '@features/prospectos/data-access/prospectos-api.service'
 import { Lead } from '@features/leads/models/lead'
 import { Pagination } from '@shared/ui/pagination/pagination'
@@ -13,26 +12,29 @@ import { Pagination } from '@shared/ui/pagination/pagination'
 export class LeadsPicker {
 	readonly requestedId = input<number>()
 	readonly selected = output<Lead>()
-	private readonly api = inject(LeadsApiService)
 	private readonly prospectosApi = inject(ProspectosApiService)
 	private readonly auth = inject(AuthStore)
 	readonly allowed = computed(() => this.auth.isFullyAuthenticated() && !this.auth.isCentral() && this.auth.session().role === UserRole.Rik)
 	readonly rows = signal<Lead[]>([])
 	readonly total = signal(0)
 	readonly page = signal(1)
-	readonly size = signal(10)
+	readonly size = signal(4)
 	readonly search = signal('')
 	readonly loading = signal(false)
 	readonly error = signal('')
 	readonly notice = signal('')
 	readonly rejecting = signal<number | null>(null)
 	readonly reason = signal('')
+	readonly reasonType = signal(3)
 	readonly saving = signal(false)
-	private readonly requests = new Subject<LeadsQuery | null>()
+	private readonly requests = new Subject<{ page: number; itemsPerPage: number; filter: string } | null>()
 	constructor() {
 		this.requests
 			.pipe(
-				switchMap((q) => (q ? this.api.getLeads(q).pipe(catchError((error) => of({ error }))) : of(null))),
+				latestSearch(
+					(q) => (q ? (q.filter ?? '') : null),
+					(q) => (q ? this.prospectosApi.suggestions(q).pipe(catchError((error) => of({ error }))) : of(null))
+				),
 				takeUntilDestroyed()
 			)
 			.subscribe((result) => {
@@ -42,7 +44,7 @@ export class LeadsPicker {
 					this.error.set('No se pudieron cargar los leads.')
 					return
 				}
-				this.rows.set(result.data.map(mapLead))
+				this.rows.set(result.leads)
 				this.total.set(result.totalRows)
 			})
 		effect(() => {
@@ -66,7 +68,7 @@ export class LeadsPicker {
 		this.error.set('')
 		if (!this.allowed()) return
 		this.loading.set(true)
-		this.requests.next({ page: this.page(), itemsPerPage: this.size(), isManager: false, rikId: null, filter: this.search().trim() })
+		this.requests.next({ page: this.page(), itemsPerPage: this.size(), filter: this.search().trim() })
 	}
 	setSearch(value: string) {
 		this.search.set(value)
@@ -79,13 +81,13 @@ export class LeadsPicker {
 	async reject() {
 		const id = this.rejecting()
 		if (!this.allowed() || id === null || this.saving()) return
-		if (!this.reason().trim() || this.reason().trim().length > 500) {
-			this.error.set('Escribe un motivo de entre 1 y 500 caracteres.')
+		if (![1, 2, 3].includes(this.reasonType()) || (this.reasonType() === 3 && !this.reason().trim()) || this.reason().trim().length > 500) {
+			this.error.set('Selecciona un motivo y, para Otro, escribe una descripción de hasta 500 caracteres.')
 			return
 		}
 		this.saving.set(true)
 		try {
-			await firstValueFrom(this.prospectosApi.rejectLead(id, this.reason().trim()))
+			await firstValueFrom(this.prospectosApi.rejectLead(id, this.reasonType() === 3 ? this.reason().trim() : '', this.reasonType()))
 			if (!this.allowed()) return
 			this.rejecting.set(null)
 			this.notice.set('Lead rechazado correctamente.')
