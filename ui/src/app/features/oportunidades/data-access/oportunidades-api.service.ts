@@ -67,12 +67,12 @@ export class OportunidadesApiService {
 		return this.http.get(this.url + '/excel', { params: this.params(filters), responseType: 'blob' })
 	}
 	template() {
-		return this.http.get(this.url + '/plantilla-productos', { responseType: 'blob' })
+		return this.http.get(this.url + '/plantilla-productos', { params: { version: '2' }, responseType: 'blob' })
 	}
 	importProducts(file: File, idSeg: number) {
 		const body = new FormData()
 		body.append('file', file)
 		body.append('idSeg', String(idSeg))
-		return this.write<Producto[]>('POST', '/importar-productos', body)
+		return this.write<{ products: Producto[]; notFoundSkus: number[] }>('POST', '/importar-productos', body)
 	}
 }

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, effect, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { LeadsService } from '../../data-access/leads.service'
 import { LeadsTable } from '../../components/leads-table/leads-table'
@@ -14,4 +14,11 @@ import { Modal } from '@shared/ui/modal/modal'
 })
 export class Leads {
     readonly store = inject(LeadsService)
+    constructor() {
+        effect((onCleanup) => {
+            if (!this.store.notice()) return
+            const timeout = setTimeout(() => this.store.notice.set(''), 3000)
+            onCleanup(() => clearTimeout(timeout))
+        })
+    }
 }

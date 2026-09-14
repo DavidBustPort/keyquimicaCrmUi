@@ -1,0 +1,17 @@
+[
+  {
+    "name": "ProjectCommands.cs",
+    "count": 10,
+    "hash": "341ec1fee4bfddd12f9c5eb69aa39273fd3c5b9cfad5b46cf98a127dadaa96de"
+  },
+  {
+    "name": "CloseCommand.cs",
+    "count": 4,
+    "hash": "e83beabae53acd43f035fa8206027509c55c5bcbc0a038c058682551ed74548c"
+  },
+  {
+    "name": "EditProductsCommand.cs",
+    "count": 1,
+    "hash": "c20ba773bf264fa5c14ac3747b4d0c30e40246fab0b13a7168e8f3799e5eabca"
+  }
+]

@@ -1,4 +1,5 @@
 import { Component, computed, effect, ElementRef, inject, input, output, signal } from '@angular/core'
+
 @Component({
 	selector: 'app-month-calendar',
 	host: {
@@ -163,36 +164,45 @@ import { Component, computed, effect, ElementRef, inject, input, output, signal 
 })
 export class MonthCalendar {
 	private readonly element = inject<ElementRef<HTMLElement>>(ElementRef)
+
 	readonly label = input.required<string>()
 	readonly value = input.required<string>()
 	readonly min = input('')
 	readonly max = input('')
+
 	readonly valueChange = output<string>()
+
 	readonly open = signal(false)
 	readonly year = signal(new Date().getFullYear())
 	readonly months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+
 	readonly display = computed(() => {
 		const [y, m] = this.value().split('-').map(Number)
 		return y && m ? new Intl.DateTimeFormat('es-MX', { month: 'long', year: 'numeric' }).format(new Date(y, m - 1, 1)) : 'Seleccionar mes'
 	})
+
 	constructor() {
 		effect(() => {
 			const y = Number(this.value().slice(0, 4))
 			if (y) this.year.set(y)
 		})
 	}
+
 	closeOnOutsideClick(event: MouseEvent) {
 		if (this.open() && !event.composedPath().includes(this.element.nativeElement)) {
 			this.open.set(false)
 		}
 	}
+
 	monthValue(i: number) {
 		return `${this.year()}-${String(i + 1).padStart(2, '0')}`
 	}
+
 	disabled(i: number) {
 		const value = this.monthValue(i)
 		return !!((this.min() && value < this.min()) || (this.max() && value > this.max()))
 	}
+
 	select(i: number) {
 		if (this.disabled(i)) return
 		this.valueChange.emit(this.monthValue(i))

@@ -1,6 +1,6 @@
-<div class="overflow-auto rounded-xl border border-slate-200 bg-white">
-	<table class="w-full text-left text-sm">
-		<thead class="bg-slate-50 text-xs text-slate-500">
+<div class="overflow-auto rounded-xl border border-sky-200 bg-white shadow-sm">
+	<table class="w-full border-collapse text-left text-sm [&_td+td]:border-l [&_td+td]:border-slate-200 [&_th+th]:border-l [&_th+th]:border-sky-200">
+		<thead class="border-b border-sky-200 bg-sky-100 text-sm text-sky-900">
 			<tr>
 				<th class="p-4">Proyecto / Aplicación</th>
 				<th class="p-4">Área / Solución</th>
@@ -14,11 +14,13 @@
 		</thead>
 		<tbody>
 			@for (p of rows(); track p.idOportunidad) {
-				<tr class="border-t border-slate-100 hover:bg-slate-50">
-					<td class="p-4">#{{ p.idOportunidad }} {{ p.aplicacion }}</td>
+				<tr class="border-b border-slate-200 last:border-b-0 even:bg-slate-50 hover:bg-sky-50">
+					<td class="min-w-48 p-4"><span class="mb-1 block text-xs text-slate-500">#{{ p.idOportunidad }}</span><span class="font-medium text-slate-800">{{ p.aplicacion }}</span></td>
 					<td class="p-4">{{ p.area }} / {{ p.solucion }}</td>
 					<td class="p-4">{{ p.tipoVenta === 1 ? 'Instalada' : 'Esporádica' }}</td>
-					<td class="p-4">{{ stages[p.etapa - 1] }}</td>
+					<td class="p-4">
+						<span class="inline-block rounded-md px-3 py-1.5 text-xs font-semibold whitespace-nowrap" [class]="stageColors[p.etapa - 1] || 'bg-slate-100 text-slate-700'">{{ stages[p.etapa - 1] || 'Sin etapa' }}</span>
+					</td>
 					<td class="p-4">{{ p.vpo | currency: 'MXN' : 'symbol-narrow' }}</td>
 					<td class="p-4">{{ p.vpt | currency: 'MXN' : 'symbol-narrow' }}</td>
 					<td class="p-4">{{ p.montoProyecto | currency: 'MXN' : 'symbol-narrow' }}</td>

@@ -14,21 +14,14 @@
 @if (!store.allowed()) {
 	<p class="rounded-lg bg-blue-50 p-5 text-blue-800">Inicia sesión en una sucursal para consultar prospectos.</p>
 } @else {
-	@if (store.notice()) {
-		<p
-			class="mb-4 rounded-lg bg-emerald-50 p-4 text-emerald-800"
-			role="status"
-		>
-			{{ store.notice() }}
-		</p>
-	}
-	<section class="mb-6 rounded-xl border border-slate-200 bg-white p-5">
+	<fieldset class="mb-6 min-w-0 rounded-xl border border-slate-200 bg-white p-5 disabled:opacity-60" [disabled]="store.loading()" aria-label="Filtros de búsqueda">
 		<div class="mb-4 flex justify-between gap-4">
 			<h2 class="font-semibold">Filtros de búsqueda</h2>
 			<button
 				class="action-button action-secondary"
 				type="button"
 				(click)="store.clear()"
+				[disabled]="store.loading() || !store.hasActiveFilters()"
 			>
 				<svg
 					class="size-4"
@@ -148,7 +141,7 @@
 				Actualizar
 			</button>
 		</div>
-	</section>
+	</fieldset>
 	@if (store.error()) {
 		<p
 			class="mb-4 rounded-lg bg-red-50 p-4 text-red-800"
@@ -163,6 +156,15 @@
 		[appScrollToResults]="store.loading()"
 		[resultsError]="store.error()"
 	>
+		@if (store.notice()) {
+			<div class="flex items-center justify-between gap-4 border-b border-emerald-200 bg-emerald-50 p-4 text-emerald-800" role="status">
+				<span>{{ store.notice() }}</span>
+				<button type="button" class="shrink-0 rounded px-2 py-1 font-semibold" aria-label="Cerrar aviso" (click)="store.notice.set('')">✕</button>
+			</div>
+		}
+		@if (store.auth.isManager() && filteredRik()) {
+			<p class="border-b border-sky-200 bg-sky-50 px-5 py-3 text-sm text-sky-900">Filtrado por RIK: <strong>{{ filteredRik() }}</strong></p>
+		}
 		<div class="flex items-center justify-between gap-4 p-5">
 			<h2 class="font-semibold">Cartera de prospectos</h2>
 			<button
@@ -189,19 +191,21 @@
 			</button>
 		</div>
 		<div class="overflow-x-auto">
-			<table class="w-full text-left text-sm">
-				<thead class="bg-slate-50 text-xs text-slate-500">
+			<table class="w-full text-left text-base">
+				<thead class="bg-slate-50 text-sm text-slate-500">
 					<tr>
 						<th class="p-4">ID / Registro</th>
 						<th class="p-4">Empresa</th>
 						<th class="p-4">Fuente</th>
 						<th class="p-4 text-right">VPO</th>
 						@if (showDetails()) {
-							@for (stage of stages; track stage) {
-								<th class="p-4">{{ stage }}</th>
+							@for (stage of stages; track stage; let i = $index) {
+								<th class="p-3 text-center" [class]="stageColors[i]" [title]="stage" [attr.aria-label]="stage">{{ stage[0] }}</th>
 							}
 						}
-						<th class="p-4">Observaciones RIK</th>
+						@if (!store.auth.isManager()) {
+							<th class="p-4">Observaciones RIK</th>
+						}
 						<th class="p-4">Acciones</th>
 					</tr>
 				</thead>
@@ -210,7 +214,7 @@
 						<tr>
 							<td
 								class="p-8 text-center text-slate-500"
-								[attr.colspan]="showDetails() ? 10 : 6"
+								[attr.colspan]="(showDetails() ? 10 : 6) - (store.auth.isManager() ? 1 : 0)"
 								role="status"
 							>
 								<app-table-loading label="Cargando prospectos…" />
@@ -240,25 +244,31 @@
 								<td class="p-4">{{ row.fuente }}</td>
 								<td class="p-4 text-right whitespace-nowrap">{{ row.vpo | currency: 'MXN' : 'symbol-narrow' }}</td>
 								@if (showDetails()) {
-									@for (stage of stageTotals(row); track stage.nombre) {
+									@for (stage of stageTotals(row); track stage.nombre; let i = $index) {
 										<td class="p-4">
-											<span>{{ stage.proyectos }} proyectos</span><small class="block whitespace-nowrap text-slate-500">{{ stage.importe | currency: 'MXN' : 'symbol-narrow' }}</small>
+											@if (stage.proyectos !== 0 || stage.importe !== 0) {
+												<span class="font-semibold whitespace-nowrap" [attr.aria-label]="stage.proyectos + ' proyectos'">{{ stage.proyectos }} proy.</span><small class="block text-sm whitespace-nowrap text-slate-500">{{ stage.importe | currency: 'MXN' : 'symbol-narrow' }}</small>
+											} @else {
+												<span class="text-slate-400" aria-label="Sin proyectos ni importe">—</span>
+											}
 										</td>
 									}
 								}
-								<td class="max-w-64 p-4">{{ row.observacionesRik || '—' }}</td>
+								@if (!store.auth.isManager()) {
+									<td class="max-w-64 p-4">{{ row.observacionesRik || '—' }}</td>
+								}
 								<td class="p-4">
-									<div class="flex gap-3">
+									<div class="flex items-center gap-2">
 										<button
 											type="button"
-											class="text-sky-700"
+											class="rounded-lg border border-sky-200 px-3 py-2 text-sm font-semibold whitespace-nowrap text-sky-700 transition-colors hover:bg-sky-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
 											(click)="openDetail(row)"
 										>
 											Ver
 										</button>
 										@if (store.canEdit()) {
 											<a
-												class="text-sky-700"
+												class="rounded-lg border border-sky-200 px-3 py-2 text-sm font-semibold whitespace-nowrap text-sky-700 transition-colors hover:bg-sky-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
 												[routerLink]="['/prospectos/edit', row.clienteId]"
 												>Editar</a
 											>
@@ -270,7 +280,7 @@
 							<tr>
 								<td
 									class="p-8 text-center text-slate-500"
-									[attr.colspan]="showDetails() ? 10 : 6"
+									[attr.colspan]="(showDetails() ? 10 : 6) - (store.auth.isManager() ? 1 : 0)"
 								>
 									{{ store.error() ? 'No se pudo obtener la información.' : 'Sin resultados para los filtros seleccionados.' }}
 								</td>
@@ -326,13 +336,13 @@
 					{ label: 'Segmento', value: p.segmento },
 					{ label: 'Tipo de cliente', value: p.tipoCliente },
 					{ label: 'Territorio', value: p.territorio },
-					{ label: 'Observaciones', value: p.observaciones }
+					{ label: store.auth.isManager() ? 'Observaciones RIK' : 'Observaciones', value: store.auth.isManager() ? (selected()?.observacionesRik ?? p.observaciones) : p.observaciones }
 				];
 				track field.label
 			) {
 				<div>
 					<dt class="text-xs text-slate-500">{{ field.label }}</dt>
-					<dd class="mt-1 break-words">{{ field.value || 'Sin información' }}</dd>
+					<dd class="mt-1 wrap-break-word">{{ field.value || 'Sin información' }}</dd>
 				</div>
 			}
 			<div>

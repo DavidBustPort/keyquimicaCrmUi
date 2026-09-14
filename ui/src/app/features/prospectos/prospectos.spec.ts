@@ -72,7 +72,7 @@ describe('Prospectos API', () => {
 				provideRouter([]),
 				ProspectosService,
 				{ provide: AuthStore, useValue: { session, isFullyAuthenticated: authenticated, isCentral: () => false, isManager: manager } },
-				{ provide: RikFilterStore, useValue: { selectedRikId: rik } }
+				{ provide: RikFilterStore, useValue: { selectedRikId: rik, riks: () => [{ id: 476, name: 'Ana RIK' }] } }
 			]
 		})
 		http = TestBed.inject(HttpTestingController)
@@ -147,13 +147,13 @@ describe('Prospectos API', () => {
 	})
 	it('loads detail and catalogs, saves IDs and omits unsupported demo fields', async () => {
 		const f = TestBed.createComponent(ProspectoForm)
-		f.componentRef.setInput('prospectoId', 42)
+		f.componentRef.setInput('clienteId', 900)
 		f.detectChanges()
 		http.expectOne(root + '/catalogs/uens').flush({ succeeded: true, data: [{ id: 8, name: 'UEN real' }] })
 		http.expectOne(root + '/catalogs/tipos-cliente').flush({ succeeded: true, data: [{ id: 7, name: 'Tipo real' }] })
 		http.expectOne(root + '/catalogs/territorios').flush({ succeeded: true, data: [{ id: 90, name: 'Territorio real' }] })
 		await Promise.resolve()
-		http.expectOne(root + '/crm/prospectos/42').flush({ succeeded: true, data: detail })
+		http.expectOne(root + '/crm/prospectos/900').flush({ succeeded: true, data: detail })
 		await Promise.resolve()
 		http.expectOne((r) => r.url === root + '/catalogs/segmentos' && r.params.get('uenId') === '8').flush({ succeeded: true, data: [{ id: 81, name: 'Segmento real' }] })
 		await f.whenStable()
@@ -196,14 +196,61 @@ describe('Prospectos API', () => {
 		await save
 		http.expectOne((r) => r.url === root + '/crm/leads/suggestions').flush({ succeeded: true, data: { leads: [], totalRows: 0 } })
 	})
-	it('opens detail by prospect ID when the customer ID differs', async () => {
+	it('opens detail by customer ID and preloads reusable form catalogs', async () => {
 		const f = TestBed.createComponent(ProspectosList)
 		f.detectChanges()
 		http.expectOne((r) => r.url === root + '/crm/prospectos').flush({ succeeded: true, data: { prospectos: [], totalRows: 0 } })
 		const pending = f.componentInstance.openDetail({ id: 42, clienteId: 900 } as ProspectoRow)
-		http.expectOne(root + '/crm/prospectos/42').flush({ succeeded: true, data: detail })
+		for (const catalog of ['uens', 'tipos-cliente', 'territorios']) http.expectOne(root + '/catalogs/' + catalog).flush({ succeeded: true, data: [] })
+		http.expectOne(root + '/crm/prospectos/900').flush({ succeeded: true, data: detail })
 		await pending
 		expect(f.componentInstance.detail()?.prospectoId).toBe(42)
+		TestBed.inject(ProspectosNotice).message.set('Prospecto creado correctamente.')
+		f.destroy()
+		expect(TestBed.inject(ProspectosNotice).message()).toBe('')
+		const form = TestBed.createComponent(ProspectoForm)
+		await form.whenStable()
+		expect(form.componentInstance.ready()).toBe(true)
+		http.expectNone((r) => r.url.includes('/catalogs/'))
+	})
+	it('does not search when the unfiltered suggestions are empty and allows explicit refresh', () => {
+		const f = TestBed.createComponent(LeadsPicker)
+		f.detectChanges()
+		http.expectOne((r) => r.url.endsWith('/suggestions')).flush({ succeeded: true, data: { leads: [], totalRows: 0 } })
+		f.componentInstance.setSearch('Empresa')
+		expect(f.componentInstance.search()).toBe('')
+		expect(f.componentInstance.noSuggestions()).toBe(true)
+		http.expectNone((r) => r.url.endsWith('/suggestions'))
+		f.componentInstance.load()
+		http.expectOne((r) => r.url.endsWith('/suggestions')).flush({ succeeded: true, data: { leads: [], totalRows: 1 } })
+		expect(f.componentInstance.noSuggestions()).toBe(false)
+	})
+	it('invalidates catalogs when the branch changes', async () => {
+		const api = TestBed.inject(ProspectosApiService)
+		const first = firstValueFrom(api.territories())
+		http.expectOne(root + '/catalogs/territorios').flush({ succeeded: true, data: [{ id: 90, name: 'Original' }] })
+		await first
+		expect(await firstValueFrom(api.territories())).toEqual([{ id: 90, name: 'Original' }])
+		session.update((s) => ({ ...s, sucursalId: 3 }))
+		const next = firstValueFrom(api.territories())
+		http.expectOne(root + '/catalogs/territorios').flush({ succeeded: true, data: [{ id: 91, name: 'Nueva' }] })
+		expect(await next).toEqual([{ id: 91, name: 'Nueva' }])
+	})
+	it('shows the selected manager RIK and updates the table filter', () => {
+		manager.set(true)
+		session.update((s) => ({ ...s, role: UserRole.Manager }))
+		rik.set(476)
+		const f = TestBed.createComponent(ProspectosList)
+		f.detectChanges()
+		const request = http.expectOne((r) => r.url === root + '/crm/prospectos')
+		expect(request.request.params.get('filterRik')).toBe('476')
+		request.flush({ succeeded: true, data: { prospectos: [], totalRows: 0 } })
+		f.detectChanges()
+		expect(f.nativeElement.textContent).toContain('Filtrado por RIK: Ana RIK')
+		rik.set(null)
+		f.detectChanges()
+		http.expectOne((r) => r.url === root + '/crm/prospectos').flush({ succeeded: true, data: { prospectos: [], totalRows: 0 } })
+		expect(f.nativeElement.textContent).not.toContain('Filtrado por RIK:')
 	})
 	it('sends the selected rejection type without requiring text for standard reasons', async () => {
 		const f = TestBed.createComponent(LeadsPicker)

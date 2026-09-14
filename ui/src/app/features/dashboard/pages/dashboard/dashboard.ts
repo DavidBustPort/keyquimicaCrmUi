@@ -15,6 +15,7 @@ import { DashboardService } from './dashboard.service'
 })
 export class Dashboard {
 	readonly service = inject(DashboardService)
+
 	readonly data = this.service.data
 
 	readonly sourceTotal = computed(() => this.data().sources.reduce((sum, s) => sum + s.count, 0))

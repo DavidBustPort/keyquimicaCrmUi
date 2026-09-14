@@ -1,0 +1,31 @@
+<dialog
+	#dialog
+	class="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-dvh w-full max-w-[min(960px,92vw)] translate-x-0 border-0 bg-slate-50 p-0 text-slate-800 shadow-2xl backdrop:bg-slate-950/30 motion-safe:transition-transform motion-safe:duration-300 max-sm:max-w-full motion-safe:starting:translate-x-full"
+	[attr.aria-labelledby]="titleId"
+	(cancel)="$event.preventDefault(); closed.emit()"
+	(click)="backdrop($event)"
+>
+	<div class="flex h-full min-h-0 flex-col">
+		<header class="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
+			<div>
+				<p class="mb-1 text-xs font-semibold tracking-widest text-sky-600 uppercase">Integralidad · Detalle del cliente</p>
+				<h2
+					[id]="titleId"
+					class="text-lg font-semibold text-slate-900"
+				>
+					{{ title() }}
+				</h2>
+			</div>
+			<button
+				type="button"
+				autofocus
+				class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-2xl text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-sky-600"
+				aria-label="Cerrar detalle"
+				(click)="closed.emit()"
+			>
+				×
+			</button>
+		</header>
+		<div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6"><ng-content /></div>
+	</div>
+</dialog>

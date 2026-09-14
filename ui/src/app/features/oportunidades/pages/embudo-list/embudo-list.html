@@ -13,12 +13,17 @@
 @if (!allowed()) {
 	<p class="rounded-lg bg-blue-50 p-5">Inicia sesión en una sucursal para consultar oportunidades.</p>
 } @else {
-	<section class="mb-5 rounded-xl border border-slate-200 bg-white p-5">
+	<fieldset
+		class="mb-5 min-w-0 rounded-xl border border-slate-200 bg-white p-5 disabled:opacity-60"
+		[disabled]="loading()"
+		aria-label="Filtros de búsqueda"
+	>
 		<div class="mb-4 flex flex-wrap items-center justify-between gap-4">
 			<h2 class="font-semibold">Filtros de búsqueda</h2>
 			<button
 				class="action-button action-secondary"
 				(click)="clear()"
+				[disabled]="loading() || !hasActiveFilters()"
 				type="button"
 			>
 				<svg
@@ -82,7 +87,7 @@
 				>Actualizar
 			</button>
 		</div>
-	</section>
+	</fieldset>
 	@if (error()) {
 		<p
 			role="alert"
@@ -91,20 +96,29 @@
 			{{ error() }}
 		</p>
 	}
-	@if (notice()) {
-		<p
-			role="status"
-			class="mb-4 rounded-lg bg-emerald-50 p-4"
-		>
-			{{ notice() }}
-		</p>
-	}
 	<section
 		class="overflow-hidden rounded-xl border border-slate-200 bg-white"
 		[appScrollToResults]="loading()"
 		[resultsError]="error()"
 		[attr.aria-busy]="loading()"
 	>
+		@if (notice()) {
+			<div
+				class="flex items-center justify-between gap-4 border-b border-emerald-200 bg-emerald-50 p-4 text-emerald-800"
+				role="status"
+			>
+				<span>{{ notice() }}</span>
+				<button
+					type="button"
+					class="shrink-0 rounded px-2 py-1 font-semibold"
+					aria-label="Cerrar aviso"
+					(click)="notice.set('')"
+				>
+					✕
+				</button>
+			</div>
+		}
+
 		<div class="flex flex-wrap items-center justify-between gap-4 p-5">
 			<h2 class="font-semibold">
 				Embudo de proyectos <span class="text-sm font-normal text-slate-500">({{ total() }})</span>
@@ -127,8 +141,7 @@
 						<tr>
 							<th class="p-3"># Oportunidad</th>
 							<th class="p-3">Fuente</th>
-							<th class="p-3">Cliente/Prospecto</th>
-							<th class="p-3">Aplicación</th>
+							<th class="min-w-60 p-3">Cliente/Prospecto · Aplicación</th>
 							<th class="p-3 text-right">VPO</th>
 							<th class="p-3 text-right">VPT</th>
 							<th class="p-3 text-center">Integralidad</th>
@@ -189,34 +202,50 @@
 							>
 								<td class="p-3 font-semibold">
 									#{{ p.idOportunidad }}
+									<span
+										class="mt-2 block w-fit rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600"
+										[title]="saleType(p.tipoVenta).title"
+										[attr.aria-label]="saleType(p.tipoVenta).title"
+										>{{ saleType(p.tipoVenta).label }}</span
+									>
 									@if (p.etapa === 5) {
 										<span class="mt-1 block text-xs text-red-700">Cancelada</span>
 									}
 								</td>
 								<td class="p-3">{{ p.fuente || '—' }}</td>
-								<td class="max-w-48 p-3 wrap-break-word">{{ p.cliente }}</td>
-								<td class="max-w-48 p-3 wrap-break-word">{{ p.aplicacion }}</td>
+								<td class="max-w-80 min-w-60 px-4 py-4 wrap-break-word">
+									<div class="leading-5 font-semibold text-slate-800">{{ p.cliente }}</div>
+									<div class="mt-2 text-sm leading-5 text-slate-500"><span class="font-medium">Aplicación:</span> {{ p.aplicacion || '—' }}</div>
+								</td>
 								<td class="p-3 text-right whitespace-nowrap tabular-nums">{{ p.vpo | currency: 'MXN' : 'symbol-narrow' }}</td>
 								<td class="p-3 text-right whitespace-nowrap tabular-nums">{{ p.vpt | currency: 'MXN' : 'symbol-narrow' }}</td>
 								<td class="p-3 text-center">{{ p.integralidad }}</td>
 								<td class="p-3 text-right whitespace-nowrap tabular-nums">
-									@if (p.etapa === 1) {
+									@if (p.etapa === 1 && p.vpmAntesCierre) {
 										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									} @else {
+										<span class="text-slate-400">—</span>
 									}
 								</td>
 								<td class="p-3 text-right whitespace-nowrap tabular-nums">
-									@if (p.etapa === 2) {
+									@if (p.etapa === 2 && p.vpmAntesCierre) {
 										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									} @else {
+										<span class="text-slate-400">—</span>
 									}
 								</td>
 								<td class="p-3 text-right whitespace-nowrap tabular-nums">
-									@if (p.etapa === 3) {
+									@if (p.etapa === 3 && p.vpmAntesCierre) {
 										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									} @else {
+										<span class="text-slate-400">—</span>
 									}
 								</td>
 								<td class="p-3 text-right whitespace-nowrap tabular-nums">
-									@if (p.etapa === 4) {
+									@if (p.etapa === 4 && p.vpmAntesCierre) {
 										{{ p.vpmAntesCierre | currency: 'MXN' : 'symbol-narrow' }}
+									} @else {
+										<span class="text-slate-400">—</span>
 									}
 								</td>
 								<td class="p-3 text-right whitespace-nowrap tabular-nums">{{ p.acys > 0 ? (p.acys | currency: 'MXN' : 'symbol-narrow') : '' }}</td>
@@ -250,7 +279,7 @@
 						} @empty {
 							<tr>
 								<td
-									colspan="14"
+									colspan="13"
 									class="p-10 text-center text-slate-500"
 								>
 									{{ error() ? 'No se pudo obtener la información.' : 'No hay oportunidades para estos filtros.' }}
@@ -280,7 +309,9 @@
 >
 	@if (selected(); as p) {
 		<h2 class="text-lg font-semibold">{{ p.cliente }} · {{ p.aplicacion }}</h2>
-		<p>{{ stages[p.etapa - 1] }} · {{ p.detalle.fechaRegistro | date: 'dd/MM/yyyy' }} · {{ p.detalle.duracionProyecto }}</p>
+		<p>
+			<span class="font-semibold">{{ stages[p.etapa - 1] }}</span> · {{ p.detalle.fechaRegistro | date: 'dd/MMM/yyyy' }} · {{ p.detalle.duracionProyecto }}
+		</p>
 		@if (error()) {
 			<p
 				role="alert"
@@ -290,29 +321,56 @@
 			</p>
 		}
 		@if (action() === 'detail') {
-			<table class="my-5 w-full text-sm">
-				<thead>
-					<tr>
-						<th class="p-4">Producto</th>
-						<th class="p-4">Cantidad</th>
-						<th class="p-4">Precio</th>
-					</tr>
-				</thead>
-				<tbody>
-					@for (product of p.detalle.productos; track product.sku) {
+			<div class="my-5 overflow-x-auto rounded-xl border border-sky-200 shadow-sm">
+				<table class="w-full min-w-96 border-collapse text-left text-sm [&_td+td]:border-l [&_td+td]:border-slate-200 [&_th+th]:border-l [&_th+th]:border-sky-200">
+					<thead class="border-b border-sky-200 bg-sky-100 text-sky-900">
 						<tr>
-							<td class="p-4">
-								{{ product.sku }} · {{ product.descripcion }}
-								@if (product.estatusAutorizacion) {
-									<small>Pendiente de autorización</small>
-								}
-							</td>
-							<td class="p-4">{{ product.unidades }}</td>
-							<td class="p-4">{{ product.precio | currency: 'MXN' : 'symbol-narrow' }}</td>
+							<th
+								scope="col"
+								class="p-4"
+							>
+								SKU / Producto
+							</th>
+							<th
+								scope="col"
+								class="p-4 text-right"
+							>
+								Cantidad
+							</th>
+							<th
+								scope="col"
+								class="p-4 text-right"
+							>
+								Precio
+							</th>
 						</tr>
-					}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						@for (product of p.detalle.productos; track product.sku) {
+							<tr class="border-b border-slate-200 last:border-b-0 even:bg-slate-50 hover:bg-sky-50">
+								<td class="p-4">
+									<span class="mb-1 block text-xs font-medium text-slate-500">SKU {{ product.sku }}</span>
+									<span class="font-medium text-slate-800">{{ product.descripcion }}</span>
+									@if (product.estatusAutorizacion) {
+										<small class="mt-2 block text-amber-700">Pendiente de autorización</small>
+									}
+								</td>
+								<td class="p-4 text-right tabular-nums">{{ product.unidades }}</td>
+								<td class="p-4 text-right whitespace-nowrap tabular-nums">{{ product.precio | currency: 'MXN' : 'symbol-narrow' }}</td>
+							</tr>
+						} @empty {
+							<tr>
+								<td
+									colspan="3"
+									class="p-8 text-center text-slate-500"
+								>
+									No hay productos.
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
 			@if (p.causaCancelacion) {
 				<p>Motivo: {{ p.causaCancelacion }}</p>
 			}
@@ -354,8 +412,8 @@
 					<label class="field flex flex-col gap-2"
 						>VPO (MXN)<input
 							type="number"
-							min="0.01"
-							step="0.01"
+							min="0"
+							step="10"
 							[disabled]="saving()"
 							[(ngModel)]="vpo" /></label
 					><button
@@ -398,9 +456,9 @@
 					type="button"
 					class="action-button action-secondary mt-4 sm:ml-3"
 					[disabled]="saving()"
-					(click)="action.set('detail')"
+					(click)="action() === 'vpo' ? selected.set(null) : action.set('detail')"
 				>
-					Volver
+					{{ action() === 'vpo' ? 'Cancelar' : 'Volver al detalle' }}
 				</button>
 			</div>
 		}

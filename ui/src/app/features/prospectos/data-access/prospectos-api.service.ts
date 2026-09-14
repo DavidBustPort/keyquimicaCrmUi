@@ -1,6 +1,7 @@
-import { inject, Injectable } from '@angular/core'
+import { effect, inject, Injectable } from '@angular/core'
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { map } from 'rxjs'
+import { map, Observable, shareReplay } from 'rxjs'
+import { AuthStore } from '@core/auth/auth.store'
 import { environment } from '@env/environment'
 import { ApiResponse } from '@app/models/api-response.model'
 import { Lead } from '@features/leads/models/lead'
@@ -20,6 +21,29 @@ import { CatalogOption, ProspectoDetail, ProspectoPayload, ProspectosQuery, Pros
 @Injectable({ providedIn: 'root' })
 export class ProspectosApiService {
 	private readonly http = inject(HttpClient)
+	private readonly auth = inject(AuthStore)
+	private catalogScope = ''
+	private readonly catalogCache = new Map<string, Observable<CatalogOption[]>>()
+	constructor() {
+		effect(() => this.syncCatalogScope())
+	}
+	private syncCatalogScope() {
+		const scope = JSON.stringify([this.auth.isFullyAuthenticated(), this.auth.session()])
+		if (scope !== this.catalogScope) {
+			this.catalogCache.clear()
+			this.catalogScope = scope
+		}
+	}
+	private catalog(path: string, params?: { uenId: number }) {
+		this.syncCatalogScope()
+		const key = path + JSON.stringify(params)
+		let request = this.catalogCache.get(key)
+		if (!request) {
+			request = this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + path, { params }).pipe(map((r) => this.unwrap(r)), shareReplay({ bufferSize: 1, refCount: false }))
+			this.catalogCache.set(key, request)
+		}
+		return request
+	}
 	private readonly url = environment.apiUrl + '/crm/prospectos'
 	private params(query: object) {
 		let params = new HttpParams()
@@ -50,13 +74,13 @@ export class ProspectosApiService {
 		return this.http.get(this.url + '/excel', { params: this.params(filters), responseType: 'blob' })
 	}
 	uens() {
-		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/uens').pipe(map((r) => this.unwrap(r)))
+		return this.catalog('/catalogs/uens')
 	}
 	customerTypes() {
-		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/tipos-cliente').pipe(map((r) => this.unwrap(r)))
+		return this.catalog('/catalogs/tipos-cliente')
 	}
 	territories() {
-		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/territorios').pipe(map((r) => this.unwrap(r)))
+		return this.catalog('/catalogs/territorios')
 	}
 	suggestions(query: { page: number; itemsPerPage: number; filter: string }) {
 		return this.http.get<ApiResponse<{ totalRows: number; leads: LeadSuggestion[] }>>(environment.apiUrl + '/crm/leads/suggestions', { params: this.params(query) }).pipe(
@@ -85,7 +109,7 @@ export class ProspectosApiService {
 		)
 	}
 	segments(uenId: number) {
-		return this.http.get<ApiResponse<CatalogOption[]>>(environment.apiUrl + '/catalogs/segmentos', { params: { uenId } }).pipe(map((r) => this.unwrap(r)))
+		return this.catalog('/catalogs/segmentos', { uenId })
 	}
 	rejectLead(id: number, reason: string, rejectionReasonId = 3) {
 		return this.http.post<ApiResponse<boolean>>(environment.apiUrl + '/crm/leads/' + id + '/reject', { leadId: id, rejectionReasonId, rejectionComment: reason }).pipe(

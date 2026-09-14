@@ -5,10 +5,15 @@
 <label class="field mb-4 flex flex-col gap-2"
 	>Buscar lead<input
 		type="search"
+		[disabled]="noSuggestions()"
 		[ngModel]="search()"
 		(ngModelChange)="setSearch($event)"
 		placeholder="Empresa o contacto"
 /></label>
+@if (noSuggestions()) {
+	<p class="mb-4 text-sm text-slate-500" role="status">No hay leads sugeridos disponibles.</p>
+	<button class="action-button action-secondary mb-4" type="button" (click)="load()" [disabled]="loading()">Actualizar leads</button>
+}
 @if (error()) {
 	<p
 		class="mb-3 rounded-lg bg-red-50 p-3 text-red-700"

@@ -28,6 +28,7 @@ export class ProspectosService {
 	readonly exporting = signal(false)
 	readonly managerDetails = signal(false)
 	readonly filters = signal({ search: '', period: '', fuente: '', registro: '', estatus: '', etapa: '', etapaLead: '' })
+	readonly hasActiveFilters = computed(() => Object.values(this.filters()).some((value) => value.trim() !== ''))
 	private previousScope = ''
 	private readonly requests = new Subject<ProspectosQuery | null>()
 	readonly query = computed<ProspectosQuery>(() => {

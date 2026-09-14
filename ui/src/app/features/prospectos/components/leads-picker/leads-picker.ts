@@ -17,6 +17,8 @@ export class LeadsPicker {
 	readonly allowed = computed(() => this.auth.isFullyAuthenticated() && !this.auth.isCentral() && this.auth.session().role === UserRole.Rik)
 	readonly rows = signal<Lead[]>([])
 	readonly total = signal(0)
+	readonly noSuggestions = signal(false)
+	private requestedFilter = ''
 	readonly page = signal(1)
 	readonly size = signal(4)
 	readonly search = signal('')
@@ -44,6 +46,7 @@ export class LeadsPicker {
 					this.error.set('No se pudieron cargar los leads.')
 					return
 				}
+				if (!this.requestedFilter) this.noSuggestions.set(result.totalRows === 0)
 				this.rows.set(result.leads)
 				this.total.set(result.totalRows)
 			})
@@ -51,6 +54,8 @@ export class LeadsPicker {
 			this.auth.session()
 			const allowed = this.allowed()
 			untracked(() => {
+				this.noSuggestions.set(false)
+				this.search.set('')
 				this.page.set(1)
 				this.rejecting.set(null)
 				if (allowed) this.load()
@@ -68,9 +73,11 @@ export class LeadsPicker {
 		this.error.set('')
 		if (!this.allowed()) return
 		this.loading.set(true)
+		this.requestedFilter = this.search().trim()
 		this.requests.next({ page: this.page(), itemsPerPage: this.size(), filter: this.search().trim() })
 	}
 	setSearch(value: string) {
+		if (this.noSuggestions()) return
 		this.search.set(value)
 		this.page.set(1)
 		this.load()

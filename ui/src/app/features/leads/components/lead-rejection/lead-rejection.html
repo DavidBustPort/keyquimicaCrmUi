@@ -14,8 +14,8 @@
     />
     @if (reason.value === '3') {
     <label class="field lead-actions flex flex-col gap-[7px] text-[12px] font-[550] mt-[20px]"
-        >Motivo de rechazo <span class="required text-[#b72f40]">*</span
-        ><textarea
+        ><span class="inline-flex items-baseline gap-1">Motivo de rechazo <span class="required text-[#b72f40]" aria-hidden="true">*</span></span>
+        <textarea
             class="py-[10px] px-[12px] border-[1px] border-solid border-[#dce3eb] w-full bg-white text-[var(--text)] rounded-[7px] min-h-[41px] [font-family:inherit] text-[13px] font-normal [font-style:inherit] leading-[inherit] [outline:none] resize-y focus:border-[#00a3ff] focus:shadow-[0_0_0_3px_#00a3ff15]"
             rows="3"
             maxlength="500"

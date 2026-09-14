@@ -1,5 +1,37 @@
 <section class="rounded-xl border border-slate-200 bg-white p-6">
-	<h2 class="mb-4 text-lg font-semibold">Productos · {{ project().aplicacion }}</h2>
+	<div class="mb-5 flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
+		<h2 class="min-w-0 text-lg font-semibold">Productos · {{ project().aplicacion }}</h2>
+		@if (editable()) {
+			<div class="ml-auto flex items-center gap-2">
+				<button
+					type="button"
+					class="action-button action-secondary"
+					(click)="excelTemplate()"
+				>
+					↓ Descargar plantilla (.xlsx)
+				</button>
+				<div class="group relative" (keydown.escape)="excelHelp.blur()">
+					<button
+						#excelHelp
+						type="button"
+						class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-sm font-semibold text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+						aria-label="Cómo completar la plantilla Excel"
+						aria-describedby="excel-template-help"
+					>
+						?
+					</button>
+					<div id="excel-template-help" role="tooltip" class="absolute right-0 top-full z-30 hidden w-72 max-w-[calc(100vw-3rem)] pt-2 group-hover:block group-focus-within:block">
+						<div class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs leading-relaxed text-slate-600 shadow-lg">
+					<p class="font-medium text-slate-700">Nota para completar el Excel</p>
+					<p class="mt-1">Completa <strong>productoId</strong> y <strong>cantidad</strong> sin modificar las columnas.</p>
+					<p class="mt-1">Precio vacío o en 0: se usa el precio de lista. Mayor a 0: se usa el precio del Excel.</p>
+					<p class="mt-1">Los productos existentes se conservan.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
 	@if (!editable()) {
 		<p class="mb-4 bg-blue-50 p-4">Consulta de productos. El proyecto está cerrado, cancelado o tiene autorizaciones pendientes.</p>
 	}
@@ -11,11 +43,28 @@
 			{{ error() }}
 		</p>
 	}
+	@if (importSummary()) {
+		<div
+			class="mb-4 flex items-start justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900"
+			role="status"
+		>
+			<p>{{ importSummary() }}</p>
+			<button
+				type="button"
+				class="shrink-0 font-semibold"
+				aria-label="Cerrar resultado de importación"
+				(click)="importSummary.set('')"
+			>
+				×
+			</button>
+		</div>
+	}
 	@if (editable()) {
 		<div class="mb-5 flex flex-wrap items-end gap-4">
 			<label class="field flex flex-col gap-2"
 				>Buscar producto<input
 					[(ngModel)]="search"
+					[disabled]="saving()"
 					(keyup.enter)="searchProducts()"
 					placeholder="SKU o descripción" /></label
 			><button
@@ -25,61 +74,74 @@
 				[disabled]="searching() || saving()"
 			>
 				Buscar</button
-			><button
-				type="button"
-				class="action-button action-secondary"
-				(click)="excelTemplate()"
-			>
-				Descargar plantilla Excel</button
-			><label
+			><label class="field flex min-w-0 flex-col gap-2 text-sm font-medium text-slate-700"
 				>Importar Excel<input
+					class="max-w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-semibold file:text-sky-800"
 					type="file"
 					accept=".xlsx"
 					[disabled]="saving()"
-					(change)="importExcel($event)" /></label
-			><button
-				type="button"
-				class="action-button action-secondary"
-				(click)="template()"
-			>
-				Plantilla CSV</button
-			><label
-				>Importar CSV<input
-					type="file"
-					accept=".csv"
-					[disabled]="saving()"
-					(change)="importFile($event)"
+					(change)="importExcel($event)"
 			/></label>
 		</div>
-		@for (p of catalog(); track p.id) {
-			<button
-				class="mb-2 block w-full rounded-lg border border-sky-100 bg-sky-50 p-3 text-left text-sm text-sky-800 hover:bg-sky-100"
-				[disabled]="saving()"
-				(click)="add(p)"
+		@if (catalog().length) {
+			<section
+				class="mb-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4"
+				aria-label="Resultados de búsqueda"
 			>
-				＋ {{ p.id }} · {{ p.name }} · {{ p.precioLista | currency: 'MXN' : 'symbol-narrow' }}
-			</button>
+				<div class="mb-3 flex items-center justify-between gap-3">
+					<div>
+						<h3 class="font-semibold text-slate-700">Resultados de búsqueda</h3>
+						<p class="mt-1 text-xs text-slate-500">Selecciona un producto para agregarlo a la oportunidad.</p>
+					</div>
+					<button
+						type="button"
+						class="shrink-0 text-sm font-semibold text-slate-600 hover:underline"
+						(click)="clearSearch()"
+					>
+						Cerrar búsqueda
+					</button>
+				</div>
+				<div class="grid max-h-72 gap-3 overflow-y-auto sm:grid-cols-2">
+					@for (p of catalog(); track p.id) {
+						<button
+							type="button"
+							class="block w-full rounded-lg border border-slate-200 bg-white p-3 text-left text-sm text-slate-700 shadow-sm hover:border-sky-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+							[disabled]="saving() || usedSkus().has(p.id)"
+							(click)="add(p)"
+						>
+							{{ usedSkus().has(p.id) ? '✓' : '＋' }} {{ p.id }} · {{ p.name }} · {{ p.precioLista | currency: 'MXN' : 'symbol-narrow' }}
+							@if (usedSkus().has(p.id)) {
+								<span class="mt-1 block text-xs font-semibold">Este producto ya está en uso en la oportunidad.</span>
+							}
+						</button>
+					}
+				</div>
+			</section>
 		}
 	}
-	<div class="overflow-x-auto rounded-xl border border-slate-200">
-		<table class="w-full min-w-200 text-left text-sm">
-			<thead class="bg-slate-50 text-xs text-slate-500">
+	<h3 class="mb-3 font-semibold text-slate-800">
+		Productos de la oportunidad <span class="text-sm font-normal text-slate-500">({{ products().length }})</span>
+	</h3>
+	<div class="overflow-x-auto rounded-xl border border-sky-200 shadow-sm">
+		<table class="w-full min-w-200 border-collapse text-left text-sm [&_td+td]:border-l [&_td+td]:border-slate-200 [&_td+td]:text-right [&_th+th]:border-l [&_th+th]:border-sky-200 [&_th+th]:text-right">
+			<thead class="border-b border-sky-200 bg-sky-100 text-sm text-sky-900">
 				<tr>
 					<th class="p-4">SKU / Producto</th>
 					<th class="p-4">Cantidad</th>
 					<th class="p-4">Precio lista</th>
 					<th class="p-4">Precio venta</th>
 					<th class="p-4">Importe</th>
-					<th class="p-4"></th>
+					<th class="p-4"><span class="sr-only">Acciones</span></th>
 				</tr>
 			</thead>
 			<tbody>
 				@for (p of products(); track p.sku) {
-					<tr class="border-t border-slate-100 hover:bg-slate-50">
+					<tr class="border-b border-slate-200 last:border-b-0 even:bg-slate-50 hover:bg-sky-50">
 						<td class="min-w-64 p-4 font-medium text-slate-800">
-							{{ p.sku }} · {{ p.descripcion }}
+							<span class="mb-1 block text-xs font-medium text-slate-500">SKU {{ p.sku }}</span>
+							{{ p.descripcion }}
 							@if (p.estatusAutorizacion) {
-								<small class="block">Autorización pendiente</small>
+								<small class="mt-2 block text-amber-700">Autorización pendiente</small>
 							}
 						</td>
 						<td class="p-4 tabular-nums">
@@ -99,6 +161,7 @@
 							<input
 								class="w-32 rounded-lg border border-slate-300 bg-white p-2 text-right focus:border-sky-600 disabled:bg-slate-100"
 								type="number"
+								step="10"
 								min="0.01"
 								[attr.aria-label]="'Precio de venta de ' + p.descripcion"
 								[(ngModel)]="p.precioVenta"

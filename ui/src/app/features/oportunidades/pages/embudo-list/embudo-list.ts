@@ -34,7 +34,18 @@ export class EmbudoList {
 	readonly error = signal('')
 	readonly notice = signal('')
 	readonly filters = signal({ search: '', period: '', etapa: '' })
+	readonly hasActiveFilters = computed(() => Object.values(this.filters()).some((value) => value.trim() !== ''))
 	readonly stages = ETAPAS
+	saleType(value: string) {
+		const type = (value ?? '')
+			.trim()
+			.toUpperCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+		if (['VI', '1', 'INSTALADA', 'VENTA INSTALADA'].includes(type)) return { label: 'VI', title: 'Venta instalada' }
+		if (['VE', '2', 'ESPORADICA', 'VENTA ESPORADICA'].includes(type)) return { label: 'VE', title: 'Venta esporádica' }
+		return { label: value || '—', title: value || 'Tipo de venta sin especificar' }
+	}
 	readonly selected = signal<Embudo | null>(null)
 	readonly action = signal('detail')
 	readonly reasons = signal<Catalogo[]>([])
@@ -56,6 +67,11 @@ export class EmbudoList {
 		}
 	})
 	constructor() {
+		effect((onCleanup) => {
+			if (!this.notice()) return
+			const timeout = setTimeout(() => this.notice.set(''), 3000)
+			onCleanup(() => clearTimeout(timeout))
+		})
 		this.requests
 			.pipe(
 				latestSearch(
@@ -147,6 +163,7 @@ export class EmbudoList {
 			return
 		}
 		this.saving.set(true)
+		this.notice.set('')
 		this.error.set('')
 		const scope = this.scope
 		try {

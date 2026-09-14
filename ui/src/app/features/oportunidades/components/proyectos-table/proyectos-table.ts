@@ -6,4 +6,5 @@ export class ProyectosTable {
 	readonly rows = input.required<Proyecto[]>()
 	readonly edit = output<Proyecto>()
 	readonly stages = ETAPAS
+	readonly stageColors = ['bg-[#00a3ff] text-white', 'bg-[#008be6] text-white', 'bg-[#0072cc] text-white', 'bg-[#005bb3] text-white', 'bg-red-50 text-red-700']
 }

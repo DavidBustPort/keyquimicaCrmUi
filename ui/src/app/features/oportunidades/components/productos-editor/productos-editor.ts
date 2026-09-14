@@ -18,10 +18,12 @@ export class ProductosEditor {
 	private readonly destroyRef = inject(DestroyRef)
 	readonly api = inject(OportunidadesApiService)
 	readonly products = signal<Producto[]>([])
+	readonly usedSkus = computed(() => new Set(this.products().map((p) => p.sku)))
 	readonly catalog = signal<ProductoBusqueda[]>([])
 	readonly validation = signal<(PrecioValidacion & { motivo: number; justificacion: string; vigencia: string })[]>([])
 	readonly error = signal('')
 	readonly notice = signal('')
+	readonly importSummary = signal('')
 	readonly saving = signal(false)
 	readonly searching = signal(false)
 	readonly editable = computed(() => this.project().etapa < 4 && !this.project().productos.some((p) => p.estatusAutorizacion))
@@ -33,6 +35,7 @@ export class ProductosEditor {
 		effect(() => {
 			const p = this.project()
 			this.version++
+			this.importSummary.set('')
 			this.searchCancelled.next()
 			this.products.set(p.productos.map((x) => ({ ...x })))
 			this.validation.set([])
@@ -42,6 +45,7 @@ export class ProductosEditor {
 		})
 	}
 	async searchProducts() {
+		if (!this.editable() || this.saving()) return
 		this.searchCancelled.next()
 		const v = ++this.searchVersion,
 			scope = this.version
@@ -55,6 +59,13 @@ export class ProductosEditor {
 		} finally {
 			if (v === this.searchVersion) this.searching.set(false)
 		}
+	}
+	clearSearch() {
+		this.searchVersion++
+		this.searchCancelled.next()
+		this.searching.set(false)
+		this.search = ''
+		this.catalog.set([])
 	}
 	add(p: ProductoBusqueda) {
 		if (!this.editable() || this.products().some((x) => x.sku === p.id)) return
@@ -148,7 +159,7 @@ export class ProductosEditor {
 			const url = URL.createObjectURL(blob),
 				a = document.createElement('a')
 			a.href = url
-			a.download = 'productos.xlsx'
+			a.download = 'cargaMasiva.xlsx'
 			a.click()
 			setTimeout(() => URL.revokeObjectURL(url), 1000)
 		} catch {
@@ -162,12 +173,22 @@ export class ProductosEditor {
 		const scope = this.version
 		this.saving.set(true)
 		this.error.set('')
+		this.importSummary.set('')
 		try {
-			const products = await firstValueFrom(this.api.importProducts(file, this.segmentId()))
+			const result = await firstValueFrom(this.api.importProducts(file, this.segmentId()))
 			if (scope !== this.version) return
-			if (products.some((p) => this.products().some((x) => x.sku === p.sku))) throw new Error('El archivo contiene productos que ya están en el proyecto.')
-			this.products.update((p) => [...p, ...products])
-			this.dirty.emit(true)
+			const existing = this.usedSkus()
+			const repeated = result.products.filter((p) => existing.has(p.sku)).map((p) => p.sku)
+			const products = result.products.filter((p) => !existing.has(p.sku))
+			if (products.length) {
+				this.products.update((current) => [...current, ...products])
+				this.clearSearch()
+				this.dirty.emit(true)
+			}
+			const messages = [products.length + ' productos agregados a la tabla.']
+			if (repeated.length) messages.push('Se omitieron porque ya estaban en la tabla: ' + repeated.join(', ') + '.')
+			if (result.notFoundSkus.length) messages.push('No se pudieron agregar estos productos porque no se encontraron para el segmento: ' + result.notFoundSkus.join(', ') + '.')
+			this.importSummary.set(messages.join(' '))
 		} catch (e) {
 			if (scope === this.version) this.error.set(e instanceof Error ? e.message : 'No se pudo importar Excel.')
 		} finally {

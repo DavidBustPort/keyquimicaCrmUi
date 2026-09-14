@@ -6,24 +6,29 @@ import { environment } from '@env/environment'
 import { ApiResponse } from '@app/models/api-response.model'
 
 @Injectable({
-    providedIn: 'root'
+	providedIn: 'root'
 })
 export class AuthService {
-    private http = inject(HttpClient)
-    private refreshRequest$: Observable<void> | null = null
+	private http = inject(HttpClient)
 
-    private readonly loginUrl = `${environment.apiUrl}/auth/token`
+	private readonly loginUrl = `${environment.apiUrl}/auth/token`
 
-    login(payload: LoginRequest): Observable<LoginResponse> {
-        return this.http
-        .post<ApiResponse<LoginResponse>>(this.loginUrl, payload)
-        .pipe(
-            map((response) => {
+	refresh(refreshToken: string): Observable<LoginResponse> {
+		return this.http.post<ApiResponse<LoginResponse>>(environment.apiUrl + '/auth/refresh-token', { refreshToken }).pipe(
+			map((response) => {
+				if (!response?.succeeded || !response.data?.token || !response.data?.refreshToken) throw new Error('La sesión expiró.')
+				return response.data
+			})
+		)
+	}
+	login(payload: LoginRequest): Observable<LoginResponse> {
+		return this.http.post<ApiResponse<LoginResponse>>(this.loginUrl, payload).pipe(
+			map((response) => {
 				if (!response?.succeeded) {
 					throw new Error(response?.message || 'No se pudo iniciar sesión.')
 				}
 				return response.data
 			})
-        )
-    }
+		)
+	}
 }

@@ -43,7 +43,7 @@
 		<app-table-loading label="Cargando oportunidad…" />
 	}
 	@if (!loading() && client(); as c) {
-		<header class="mb-6 rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50 to-white p-6">
+		<header class="mb-6 rounded-xl border border-sky-100 bg-linear-to-r from-sky-50 to-white p-6">
 			<h2 class="text-2xl font-semibold text-slate-800">{{ c.razonSocial }}</h2>
 			<p class="mt-2 text-sm text-slate-500">Cliente #{{ c.clienteId }} · {{ total() }} proyectos</p>
 		</header>
@@ -113,7 +113,8 @@
 						<label class="field sm:max-w-xs"
 							>Cantidad<input
 								type="number"
-								min="0.01"
+								min="10"
+								step="10"
 								[(ngModel)]="dimension" /></label
 						><button
 							type="button"

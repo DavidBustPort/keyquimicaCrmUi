@@ -52,27 +52,36 @@
 	}
 	<div class="mt-5 space-y-3">
 		@for (a of apps(); track a.id) {
-			<div class="flex flex-wrap items-center justify-between gap-5 rounded-xl border border-slate-200 bg-slate-50 p-5">
-				<label
-					><input
-						type="checkbox"
-						[(ngModel)]="a.selected"
-						[disabled]="!a.activo || saving()"
-						(ngModelChange)="dirty.emit(true)"
-					/>
-					{{ a.name }}</label
-				><span>VPT: {{ vpt(a) | currency: 'MXN' : 'symbol-narrow' }}</span>
+			<div class="grid items-end gap-4 rounded-xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-[minmax(0,1fr)_11rem_13rem]">
+				<div class="min-w-0 space-y-2">
+					<span class="block text-sm text-slate-500">Aplicación</span>
+					<label class="flex min-h-11 min-w-0 flex-row items-center gap-3 text-sm font-medium text-slate-800">
+						<input
+							class="m-0 size-4 min-h-0 w-4 shrink-0 accent-sky-600"
+							type="checkbox"
+							[(ngModel)]="a.selected"
+							[disabled]="!a.activo || saving()"
+							(ngModelChange)="dirty.emit(true)"
+						/>
+						<span class="min-w-0 wrap-break-word">{{ a.name }}</span>
+					</label>
+				</div>
+				<div class="field min-w-0">
+					<span>VPT</span>
+					<span class="flex h-11 items-center justify-end rounded-lg border border-slate-200 bg-white px-3 text-sm whitespace-nowrap tabular-nums">{{ vpt(a) | currency: 'MXN' : 'symbol-narrow' }}</span>
+				</div>
 				@if (a.activo) {
-					<label class="field"
+					<label class="field flex min-w-0 flex-col gap-2"
 						>VPO<input
 							type="number"
-							min="0.01"
+							step="10"
+							min="0"
 							[(ngModel)]="a.vpo"
 							[disabled]="saving()"
 							(ngModelChange)="dirty.emit(true)"
 					/></label>
 				} @else {
-					<span class="text-slate-500">Ya tiene un proyecto activo</span>
+					<span class="flex min-h-11 items-center text-sm text-slate-500">Ya tiene un proyecto activo</span>
 				}
 			</div>
 		}

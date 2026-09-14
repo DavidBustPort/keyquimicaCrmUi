@@ -3,12 +3,12 @@ import { ExternalLoginResponse, UserRole } from './auth.model'
 const mockExternalSucursalLoginResponse: Record<UserRole, ExternalLoginResponse> = {
 	[UserRole.Rik]: {
 		loggedIn: true,
-		userId: 1140,
+		userId: 17,
 		userName: 'Rik User',
 		role: UserRole.Rik,
 		sucursalId: 110,
 		description: 'Mock Rik User',
-		rikId: 475
+		rikId: 869
 	},
 	[UserRole.Manager]: {
 		loggedIn: true,

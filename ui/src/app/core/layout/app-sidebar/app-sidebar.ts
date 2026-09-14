@@ -35,6 +35,7 @@ export class AppSidebar {
 			path: '/oportunidades-proyectos',
 			icon: 'M9 3h6v6H9zM3 15h6v6H3zM15 15h6v6h-6zM12 9v3M6 15v-3h12v3'
 		},
+		{ label: 'Integralidad', path: '/integralidad', icon: 'M3 3v18h18M7 17v-5M12 17V7M17 17V4' },
 		{ label: 'Leads', path: '/leads', icon: 'M4 4h16l2 11v5H2v-5L4 4zM2 15h6l2 3h4l2-3h6' }
 	]
 	readonly reports = [

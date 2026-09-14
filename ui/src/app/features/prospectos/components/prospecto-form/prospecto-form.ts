@@ -14,7 +14,7 @@ import { LeadsPicker } from '@features/prospectos/components/leads-picker/leads-
 const requiredText = Validators.pattern(/\S/)
 @Component({ selector: 'app-prospecto-form', imports: [ReactiveFormsModule, RouterLink, FormField, Modal, LeadsPicker], templateUrl: './prospecto-form.html' })
 export class ProspectoForm {
-	readonly prospectoId = input<number>()
+	readonly clienteId = input<number>()
 	readonly leadId = input<number>()
 	readonly auth = inject(AuthStore)
 	private readonly api = inject(ProspectosApiService)
@@ -40,19 +40,19 @@ export class ProspectoForm {
 	private segmentGeneration = 0
 	readonly form = this.fb.group({
 		razonSocial: ['', [Validators.required, requiredText, Validators.maxLength(180)]],
-		contacto: ['', Validators.maxLength(120)],
+		contacto: ['', Validators.maxLength(40)],
 		correo: ['', [Validators.email, Validators.maxLength(180)]],
-		telefono: ['', Validators.maxLength(30)],
+		telefono: ['', Validators.maxLength(20)],
 		uenId: [0, [Validators.required, Validators.min(1)]],
 		segmentoId: [0, [Validators.required, Validators.min(1)]],
 		tipoClienteId: [0, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
 		territorioId: [0, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
-		vpo: [0, [Validators.required, Validators.min(0.01)]],
+		vpo: [0, [Validators.required, Validators.min(0.0)]],
 		observaciones: ['', Validators.maxLength(2000)]
 	})
 	constructor() {
 		effect(() => {
-			const id = this.prospectoId(),
+			const id = this.clienteId(),
 				allowed = this.canEdit()
 			this.auth.session()
 			untracked(() => {
@@ -81,7 +81,7 @@ export class ProspectoForm {
 			}
 		})
 	}
-	async load(id = this.prospectoId()) {
+	async load(id = this.clienteId()) {
 		const generation = ++this.generation
 		this.loading.set(true)
 		this.ready.set(false)
@@ -130,6 +130,7 @@ export class ProspectoForm {
 			if (generation === this.generation) this.loading.set(false)
 		}
 	}
+
 	async changeUen() {
 		const generation = ++this.segmentGeneration,
 			scope = this.generation
@@ -157,7 +158,7 @@ export class ProspectoForm {
 		return 'Completa este campo con un valor válido.'
 	}
 	selectLead(lead: Lead) {
-		if (!this.canEdit() || this.prospectoId() !== undefined) return
+		if (!this.canEdit() || this.clienteId() !== undefined) return
 		this.selectedLead.set(lead)
 		this.form.patchValue({ razonSocial: lead.empresa, contacto: lead.contacto, correo: lead.correo, telefono: lead.telefono })
 		this.modalOpen.set(false)
@@ -183,11 +184,16 @@ export class ProspectoForm {
 			this.error.set('Completa contacto, correo, teléfono y observaciones para el lead.')
 			return
 		}
+		if (this.record() && this.record()?.prospectoId === null) {
+			this.error.set('No se puede modificar un prospecto que aún no ha sido convertido en prospecto.')
+			return
+		}
+
 		const payload: ProspectoPayload = { ...f, razonSocial: f.razonSocial.trim(), contacto: f.contacto.trim() || null, correo: f.correo.trim() || null, telefono: f.telefono.trim() || null, observaciones: f.observaciones.trim() || null }
 		const generation = this.generation
 		this.saving.set(true)
 		try {
-			const message = await firstValueFrom(this.api.save(payload, this.prospectoId(), this.selectedLead()?.id))
+			const message = await firstValueFrom(this.api.save(payload, this.record()?.prospectoId ?? undefined, this.selectedLead()?.id))
 			if (generation !== this.generation) return
 			this.notice.message.set(message)
 			await this.router.navigateByUrl('/prospectos')

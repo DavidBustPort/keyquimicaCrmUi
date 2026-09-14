@@ -4,7 +4,7 @@
 	>← Volver a prospectos</a
 >
 <header class="mb-6">
-	<h1 class="text-2xl font-semibold">{{ prospectoId() === undefined ? 'Nuevo Prospecto' : 'Editar Prospecto' }}</h1>
+	<h1 class="text-2xl font-semibold">{{ clienteId() === undefined ? 'Nuevo Prospecto' : 'Editar Prospecto' }}</h1>
 	<p class="mt-2 text-slate-500">Información comercial de la sucursal.</p>
 </header>
 @if (!canEdit()) {
@@ -41,7 +41,7 @@
 			novalidate
 			class="overflow-hidden rounded-xl border border-slate-200 bg-white"
 		>
-			@if (prospectoId() === undefined) {
+			@if (clienteId() === undefined) {
 				<div class="flex flex-wrap items-center justify-between gap-4 bg-sky-50 p-5">
 					<div>
 						<strong>Crear desde un lead</strong>
@@ -93,7 +93,7 @@
 					><input
 						id="contacto"
 						formControlName="contacto"
-						maxlength="120"
+						maxlength="40"
 				/></app-form-field>
 				<app-form-field
 					label="Correo electrónico"
@@ -115,7 +115,7 @@
 						id="telefono"
 						type="tel"
 						formControlName="telefono"
-						maxlength="30"
+						maxlength="20"
 				/></app-form-field>
 				<app-form-field
 					label="UEN"
@@ -184,13 +184,15 @@
 					forId="vpo"
 					[required]="true"
 					[error]="fieldError('vpo')"
-					><input
+				>
+					<input
 						id="vpo"
 						type="number"
-						min="0.01"
-						step="0.01"
+						min="10"
+						step="10"
 						formControlName="vpo"
-				/></app-form-field>
+					/>
+				</app-form-field>
 				<app-form-field
 					class="sm:col-span-2"
 					label="Observaciones RIK"
@@ -216,7 +218,7 @@
 					type="submit"
 					[disabled]="saving() || segmentLoading()"
 				>
-					{{ saving() ? 'Guardando…' : prospectoId() === undefined ? 'Crear prospecto' : 'Guardar cambios' }}
+					{{ saving() ? 'Guardando…' : clienteId() === undefined ? 'Crear prospecto' : 'Guardar cambios' }}
 				</button>
 			</div>
 		</form>
